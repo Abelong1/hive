@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://hlthachyodyncnfkpqwo.supabase.co; connect-src https://hlthachyodyncnfkpqwo.supabase.co; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Researcher Portal — CPE Thesis Digital Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/forms.css">
+</head>
+<body>
+<header class="site-header site-header--slim">
+  <p class="site-header__eyebrow"><a href="index.html">← Back to the archive</a></p>
+  <h1>Researcher Portal</h1>
+  <p>Submit or update your thesis entry. Entries go live only after ACES review.</p>
+</header>
+
+<main class="panel-wrap">
+  <p id="msg" role="status" aria-live="polite" class="msg"></p>
+
+  <!-- sign in / sign up -->
+  <section id="view-auth" class="panel" hidden>
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab" role="tab" id="tab-signin" aria-selected="true">Sign in</button>
+      <button type="button" class="tab" role="tab" id="tab-signup" aria-selected="false">Create account</button>
+    </div>
+    <form id="form-signin" autocomplete="on">
+      <label class="field"><span>Email</span><input type="email" id="si-email" required autocomplete="email"></label>
+      <label class="field"><span>Password</span><input type="password" id="si-password" required autocomplete="current-password"></label>
+      <div class="actions"><button class="btn btn--primary" type="submit">Sign in</button>
+        <button class="linkbtn" type="button" id="btn-forgot">Forgot password?</button></div>
+    </form>
+    <form id="form-signup" hidden autocomplete="on">
+      <p class="muted">Use any personal email you will keep after graduation. You'll need an invite code from ACES in the next step.</p>
+      <label class="field"><span>Email</span><input type="email" id="su-email" required autocomplete="email"></label>
+      <label class="field"><span>Password <small>At least 10 characters.</small></span>
+        <input type="password" id="su-password" required minlength="10" autocomplete="new-password"></label>
+      <div class="actions"><button class="btn btn--primary" type="submit">Create account</button></div>
+    </form>
+  </section>
+
+  <!-- set a new password after the reset email link -->
+  <section id="view-recovery" class="panel" hidden>
+    <h2>Choose a new password</h2>
+    <form id="form-recovery">
+      <label class="field"><span>New password <small>At least 10 characters.</small></span>
+        <input type="password" id="rc-password" required minlength="10" autocomplete="new-password"></label>
+      <div class="actions"><button class="btn btn--primary" type="submit">Save password</button></div>
+    </form>
+  </section>
+
+  <!-- first login: redeem invite code -->
+  <section id="view-redeem" class="panel" hidden>
+    <h2>One more step</h2>
+    <p>Enter the invite code ACES gave you and your full name. Codes work once and expire after 7 days.</p>
+    <form id="form-redeem">
+      <label class="field"><span>Full name</span><input type="text" id="rd-name" required maxlength="120" autocomplete="name"></label>
+      <label class="field"><span>Invite code</span><input type="text" id="rd-code" required maxlength="40" autocomplete="off" autocapitalize="characters"></label>
+      <div class="actions"><button class="btn btn--primary" type="submit">Continue</button>
+        <button class="btn" type="button" data-signout>Sign out</button></div>
+    </form>
+  </section>
+
+  <!-- dashboard -->
+  <section id="view-dash" hidden>
+    <div class="panel">
+      <div class="topbar">
+        <div><h2 id="dash-title">Your entries</h2><p class="muted" id="dash-sub"></p></div>
+        <div class="actions"><button class="btn btn--primary" type="button" id="btn-new">New entry</button>
+          <button class="btn" type="button" data-signout>Sign out</button></div>
+      </div>
+      <ul class="entries" id="entries"></ul>
+      <p class="muted" id="entries-empty" hidden>You have no entries yet.</p>
+    </div>
+  </section>
+
+  <!-- entry form -->
+  <section id="view-form" class="panel" hidden>
+    <h2 id="form-title">New entry</h2>
+    <div class="notice" id="form-notice" hidden></div>
+    <form id="form-entry" novalidate>
+      <label class="field"><span>Thesis title</span><input type="text" id="f-title" maxlength="300" required></label>
+      <div class="row">
+        <label class="field"><span>School year</span><select id="f-year"></select></label>
+        <label class="field"><span>Adviser</span><input type="text" id="f-adviser" maxlength="120" placeholder="Engr. F. Lastname" required></label>
+      </div>
+      <label class="field"><span>Abstract <small>Up to 4000 characters.</small></span><textarea id="f-abstract" maxlength="4000" required></textarea></label>
+      <label class="field"><span>Conclusion</span><textarea id="f-conclusion" maxlength="3000"></textarea></label>
+      <label class="field"><span>Recommendations for future researchers</span><textarea id="f-recs" maxlength="3000"></textarea></label>
+      <label class="field"><span>Tags <small>Comma-separated, up to 10. Example: IoT, Embedded Systems</small></span><input type="text" id="f-tags"></label>
+      <label class="field"><span>Technologies <small>Comma-separated, up to 20.</small></span><input type="text" id="f-tech"></label>
+      <label class="field"><span>References <small>One citation per line, up to 30. Citations only, no excerpted text.</small></span><textarea id="f-refs"></textarea></label>
+
+      <h3>Prototype / device photo (optional)</h3>
+      <label class="field"><span>Photo <small>JPG, PNG or WebP, max 2 MB.</small></span><input type="file" id="f-photo" accept="image/jpeg,image/png,image/webp"></label>
+      <p class="muted" id="f-photo-status"></p>
+      <label class="field"><span>Photo caption</span><input type="text" id="f-photo-cap" maxlength="300"></label>
+
+      <h3>Researchers</h3>
+      <p class="muted">List everyone in your group. Photos are optional; leave them out unless that person agrees.</p>
+      <div id="researchers"></div>
+      <button class="btn btn--small" type="button" id="btn-add-researcher">+ Add researcher</button>
+
+      <h3>Consent to publish</h3>
+      <label class="check"><input type="checkbox" id="f-consent">
+        <span>I consent to my name, and any photo I add, together with this entry's title, abstract, conclusion and recommendations, being published publicly in the CPE Thesis Digital Archive. I understand I can ask ACES to remove it at any time.</span></label>
+      <label class="check"><input type="checkbox" id="f-group">
+        <span>I have informed every groupmate listed above and have their permission to publish their names (and photos, if added).</span></label>
+
+      <div class="actions">
+        <button class="btn" type="submit" id="btn-draft" value="draft">Save draft</button>
+        <button class="btn btn--primary" type="submit" id="btn-submit" value="pending">Submit for review</button>
+        <button class="btn" type="button" id="btn-cancel">Cancel</button>
+        <button class="btn btn--danger" type="button" id="btn-delete" hidden>Delete entry</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script src="vendor/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/portal.js"></script>
+</body>
+</html>

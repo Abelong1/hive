@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://hlthachyodyncnfkpqwo.supabase.co; connect-src https://hlthachyodyncnfkpqwo.supabase.co; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>ACES Admin — CPE Thesis Digital Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/forms.css">
+</head>
+<body>
+<header class="site-header site-header--slim">
+  <p class="site-header__eyebrow"><a href="index.html">Archive</a> · <a href="portal.html">Researcher portal</a></p>
+  <h1>ACES Admin</h1>
+  <p>Review submissions, manage published entries, and issue invite codes.</p>
+</header>
+
+<main class="panel-wrap">
+  <p id="msg" role="status" aria-live="polite" class="msg"></p>
+
+  <section id="view-denied" class="panel" hidden>
+    <h2>Admins only</h2>
+    <p id="denied-text">Sign in through the <a href="portal.html">researcher portal</a> with an admin account, then come back to this page.</p>
+  </section>
+
+  <section id="view-admin" hidden>
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab" role="tab" id="tab-review" aria-selected="true">Review queue</button>
+      <button type="button" class="tab" role="tab" id="tab-published" aria-selected="false">Published</button>
+      <button type="button" class="tab" role="tab" id="tab-codes" aria-selected="false">Invite codes</button>
+    </div>
+
+    <div id="pane-review" class="panel"><h2>Waiting for review</h2><div id="review-list"></div></div>
+
+    <div id="pane-published" class="panel" hidden>
+      <div class="topbar"><h2>Published entries</h2>
+        <button class="btn btn--small btn--danger" type="button" id="btn-del-samples">Delete all sample entries</button></div>
+      <ul class="entries" id="published-list"></ul>
+    </div>
+
+    <div id="pane-codes" class="panel" hidden>
+      <h2>Invite codes</h2>
+      <p class="muted">One code per thesis group. Each works once and expires after 7 days. Share it privately with the researcher.</p>
+      <form id="form-code" class="topbar">
+        <input type="text" id="code-note" maxlength="200" placeholder="Note, e.g. group or thesis title" aria-label="Note for the code">
+        <button class="btn btn--primary" type="submit">Create code</button>
+      </form>
+      <ul class="entries" id="code-list"></ul>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
