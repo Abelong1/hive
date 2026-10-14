@@ -36,6 +36,7 @@
     e.preventDefault();
     say("Signing in…");
     const r = await sb.auth.signInWithPassword({ email: $("si-email").value.trim(), password: $("si-password").value });
+    if (r.error) sb.rpc("report_failed_login", { p_email: $("si-email").value.trim() }).then(function () {}, function () {});
     if (r.error) say("Sign in failed. Check your email and password, and make sure you confirmed your email first.", "error");
     else say("");
   });

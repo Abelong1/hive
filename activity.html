@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://hlthachyodyncnfkpqwo.supabase.co; connect-src https://hlthachyodyncnfkpqwo.supabase.co; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Activity Logs — ACES Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/forms.css">
+</head>
+<body>
+<header class="site-header site-header--slim">
+  <p class="site-header__eyebrow"><a href="index.html">Archive</a> · <a href="admin.html">Admin</a></p>
+  <h1>Activity Logs</h1>
+  <p>Who changed what, and when. Logs are written by the database and cannot be edited or deleted.</p>
+</header>
+
+<main class="panel-wrap panel-wrap--wide">
+  <p id="msg" role="status" aria-live="polite" class="msg"></p>
+
+  <section id="view-denied" class="panel" hidden>
+    <h2>Admins only</h2>
+    <p id="denied-text">Sign in through the <a href="portal.html">researcher portal</a> with an admin account, then come back to this page.</p>
+  </section>
+
+  <section id="view-main" hidden>
+    <div class="tabs" role="tablist" id="tabs"></div>
+
+    <div id="pane-overview" class="panel" hidden>
+      <div class="stats" id="stats"></div>
+      <h3>Alerts (last 24 hours)</h3>
+      <ul class="entries" id="alert-list"></ul>
+      <h3>Latest activity</h3>
+      <ul class="entries" id="recent-list"></ul>
+    </div>
+
+    <div id="pane-log" class="panel" hidden>
+      <form class="filters" id="filters">
+        <label>From <input type="date" id="f-from"></label>
+        <label>To <input type="date" id="f-to"></label>
+        <label>User <input type="text" id="f-user" placeholder="email" maxlength="200"></label>
+        <label>Entry <input type="text" id="f-entry" placeholder="title or code" maxlength="200"></label>
+        <button class="btn btn--small" type="submit">Filter</button>
+        <button class="btn btn--small" type="button" id="btn-csv">Export CSV</button>
+      </form>
+      <p class="muted" id="log-note"></p>
+      <ul class="entries" id="log-list"></ul>
+      <button class="btn btn--small" type="button" id="btn-more" hidden>Load more</button>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/activity.js"></script>
+</body>
+</html>

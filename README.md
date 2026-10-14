@@ -6,6 +6,7 @@ Static site + Supabase backend (project `hive-archive`, Singapore).
 |---|---|---|
 | `index.html` | public | Browse approved entries (read-only) |
 | `portal.html` | researchers | Sign in, redeem invite code, create/edit own entry |
+| `activity.html` | ACES admins | Activity logs: edits (with restore), status, sign-ins, codes, consent, alerts, CSV export |
 | `admin.html` | ACES admins | Approve/reject, take down, issue invite codes, adviser photos |
 
 ## Go live
@@ -19,6 +20,10 @@ Static site + Supabase backend (project `hive-archive`, Singapore).
    `insert into public.profiles (id, full_name, role) select id, 'Your Name', 'admin' from auth.users where email = 'you@example.com';`
 4. Admin page → Invite codes → create one per thesis group.
 5. When real entries exist: Admin → Published → "Delete all sample entries".
+
+## Activity log
+- `supabase/activity_log.sql` (already applied). Triggers write every change to `activity_log`; only admins can read it; nobody can edit or delete it through the API.
+- Sign-in history needs Supabase's auth audit log in the database: Dashboard → Authentication → Audit Logs → turn OFF "Disable writing auth audit logs to project database". Failed portal sign-ins are logged regardless.
 
 ## Rules enforced by the database (not the pages)
 - Public sees only `approved` rows and never `owner_id` or consent fields.

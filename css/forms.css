@@ -93,3 +93,31 @@ details > summary { cursor: pointer; font-weight: 700; }
 
 #adviser-list img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; }
 #adviser-list input[type="file"] { margin-top: 0.4rem; font-size: 0.85rem; }
+
+/* ---------- activity logs ---------- */
+.panel-wrap--wide { max-width: 72rem; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.75rem; margin-bottom: 0.5rem; }
+.stat { border: 1px solid var(--line); border-radius: 12px; padding: 0.8rem 1rem; background: #fff; }
+.stat__n { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--comb-charcoal); }
+.stat__l { font-size: 0.85rem; color: var(--comb-charcoal-soft); }
+.filters { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: flex-end; margin-bottom: 1rem; }
+.filters label { display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 600; gap: 0.2rem; }
+.filters input[type="text"], .filters input[type="date"] { width: 11rem; font: inherit; border: 2px solid var(--line); border-radius: 10px; padding: 0.35rem 0.6rem; background: #fff; }
+.entry--log { display: block; }
+.entry--log summary { font-weight: 400; list-style: none; }
+.entry--log summary::-webkit-details-marker { display: none; }
+.entry--log summary::after { content: "Show changes ▾"; font-size: 0.8rem; color: var(--honey-text); font-weight: 600; }
+.entry--log details[open] summary::after { content: "Hide changes ▴"; }
+.entry--alert { border-color: #B3321E; background: #FDE8E4; }
+.diff { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-size: 0.9rem; table-layout: fixed; }
+.diff th, .diff td { border: 1px solid var(--line); padding: 0.45rem 0.6rem; text-align: left; vertical-align: top; white-space: pre-wrap; overflow-wrap: anywhere; }
+.diff thead th { background: var(--wax-cream); }
+.diff tbody th { width: 9rem; }
+.diff__old { background: #FDF1EE; }
+.diff__new { background: #EEF7EA; }
+#log-list > li > h3 { font-family: var(--font-display); margin: 1rem 0 0.5rem; }
+@media (max-width: 640px) {
+  .diff tbody th { width: 6rem; }
+  .filters input[type="text"], .filters input[type="date"] { width: 100%; }
+  .filters label { flex: 1 1 100%; }
+}
