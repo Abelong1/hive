@@ -324,3 +324,6 @@ begin
 end $$;
 revoke all on function public.admin_restore(bigint) from public, anon;
 grant execute on function public.admin_restore(bigint) to authenticated;
+
+revoke all on function public.theses_audit(), public.researchers_audit_del(), public.researchers_audit_ins(),
+  public.researchers_audit_upd(), public.advisers_audit(), public.codes_audit(), public.consent_audit() from public, anon, authenticated;
