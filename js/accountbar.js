@@ -3,6 +3,12 @@
 (function () {
   "use strict";
   const H = window.Hive, el = H.el;
+  // Email links (password reset, confirmation) may land on this page; hand them to the portal.
+  if (/[#&](type=(recovery|signup|invite|magiclink|email_change)|error_code=)/.test(location.hash) &&
+      !/portal\.html$/.test(location.pathname)) {
+    location.replace("portal.html" + location.hash);
+    return;
+  }
   const header = document.querySelector(".site-header");
   if (!header || !window.supabase) return;
   const sb = H.client();
