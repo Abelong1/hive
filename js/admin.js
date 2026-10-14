@@ -10,7 +10,7 @@
   let session = null, isAdmin = false, started = false;
 
   function showTab(name) {
-    ["review", "published", "codes"].forEach(function (t) {
+    ["review", "published", "codes", "advisers"].forEach(function (t) {
       $("pane-" + t).hidden = t !== name;
       $("tab-" + t).setAttribute("aria-selected", String(t === name));
     });
@@ -18,8 +18,9 @@
     if (name === "review") loadReview();
     if (name === "published") loadPublished();
     if (name === "codes") loadCodes();
+    if (name === "advisers") loadAdvisers();
   }
-  ["review", "published", "codes"].forEach(function (t) {
+  ["review", "published", "codes", "advisers"].forEach(function (t) {
     $("tab-" + t).addEventListener("click", function () { showTab(t); });
   });
 
@@ -146,5 +147,66 @@
       } }));
       list.append(el("li", { class: "entry" }, kids));
     });
+  }
+
+  // ---------- adviser photos ----------
+  async function uploadPhoto(file) {
+    const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[file.type];
+    if (!ext) throw new Error("Use a JPG, PNG or WebP image.");
+    if (file.size > 2 * 1024 * 1024) throw new Error("That image is larger than 2 MB.");
+    const path = session.user.id + "/advisers/" + crypto.randomUUID() + "." + ext;
+    const r = await sb.storage.from("photos").upload(path, file, { contentType: file.type, upsert: false });
+    if (r.error) throw new Error("Upload failed. Please try again.");
+    return sb.storage.from("photos").getPublicUrl(path).data.publicUrl;
+  }
+
+  async function loadAdvisers() {
+    const list = $("adviser-list");
+    H.clear(list);
+    const [a, b] = await Promise.all([
+      sb.from("theses").select("adviser"),
+      sb.from("advisers").select("name_key,name,photo_url")
+    ]);
+    if (a.error || b.error) { say("Could not load advisers.", "error"); return; }
+    const map = new Map();
+    b.data.forEach(function (r) { map.set(r.name_key, { key: r.name_key, name: r.name, photo: r.photo_url, count: 0 }); });
+    a.data.forEach(function (t) {
+      const name = String(t.adviser || "").trim();
+      if (name.length < 2) return;
+      const key = name.toLowerCase();
+      const p = map.get(key) || { key: key, name: name, photo: "", count: 0 };
+      p.count++;
+      map.set(key, p);
+    });
+    const people = Array.from(map.values()).sort(function (x, y) { return x.name.localeCompare(y.name); });
+    if (!people.length) { list.append(el("li", { class: "muted", text: "No advisers yet." })); return; }
+    people.forEach(function (p) {
+      const file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", "aria-label": "Photo for " + p.name });
+      file.addEventListener("change", async function () {
+        if (!file.files[0]) return;
+        say("Uploading…");
+        try {
+          const url = await uploadPhoto(file.files[0]);
+          await savePhoto(p, url, "Photo saved for " + p.name + ".");
+        } catch (err) { say(err.message, "error"); }
+      });
+      const kids = [
+        safeImg(p.photo, p.name, "") || el("div", { class: "muted", text: "No photo" }),
+        el("div", {}, [el("div", { class: "entry__title", text: p.name }),
+          el("div", { class: "entry__meta", text: p.count + (p.count === 1 ? " entry" : " entries") }), file])
+      ];
+      if (p.photo) kids.push(el("button", { class: "btn btn--small btn--danger", type: "button", text: "Remove photo",
+        onclick: function () { if (confirm("Remove " + p.name + "'s photo?")) savePhoto(p, "", "Photo removed."); } }));
+      list.append(el("li", { class: "entry" }, kids));
+    });
+  }
+
+  async function savePhoto(p, url, okMsg) {
+    const r = await sb.from("advisers").upsert({ name_key: p.key, name: p.name, photo_url: url, updated_at: new Date().toISOString() });
+    if (r.error) { say("Could not save the photo.", "error"); return; }
+    say(okMsg, "ok");
+    const m = $("msg").textContent, k = $("msg").className;
+    await loadAdvisers();
+    $("msg").textContent = m; $("msg").className = k;
   }
 })();

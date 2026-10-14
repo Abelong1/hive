@@ -8,6 +8,7 @@
   let currentQuery = "";
   let lastFocused = null;
   let THESIS_DATA = [];
+  const ADVISER_PHOTOS = {};
 
   // ---- DOM refs --------------------------------------------------------------
   const gridEl = document.getElementById("honeycomb");
@@ -78,6 +79,10 @@
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       THESIS_DATA = rows.map(mapRow);
+      try {
+        const ar = await fetch(cfg.url + "/rest/v1/advisers?select=name_key,photo_url", { headers: { apikey: cfg.key } });
+        if (ar.ok) (await ar.json()).forEach(function (a) { if (a.photo_url) ADVISER_PHOTOS[a.name_key] = a.photo_url; });
+      } catch (e) { /* photos are optional */ }
       populateYearFilter();
       populateTagFilters();
       render();
@@ -305,7 +310,7 @@
       map.set(key, p);
     }
     THESIS_DATA.forEach(function (t) {
-      add(advisers, t.adviser, "");
+      add(advisers, t.adviser, ADVISER_PHOTOS[String(t.adviser || "").trim().toLowerCase()] || "");
       t.researchers.forEach(function (r) { add(researchers, r.name, r.photo); });
     });
     function sorted(map) {

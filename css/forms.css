@@ -90,3 +90,6 @@ input[type="file"] { font: inherit; max-width: 100%; }
 .review dd { margin: 0.15rem 0 0; white-space: pre-wrap; }
 details > summary { cursor: pointer; font-weight: 700; }
 .code { font-family: var(--font-mono); font-size: 1rem; letter-spacing: 0.06em; background: var(--comb-charcoal); color: var(--honey-light); padding: 0.2rem 0.6rem; border-radius: 6px; }
+
+#adviser-list img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; }
+#adviser-list input[type="file"] { margin-top: 0.4rem; font-size: 0.85rem; }

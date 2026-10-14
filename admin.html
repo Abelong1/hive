@@ -32,6 +32,7 @@
       <button type="button" class="tab" role="tab" id="tab-review" aria-selected="true">Review queue</button>
       <button type="button" class="tab" role="tab" id="tab-published" aria-selected="false">Published</button>
       <button type="button" class="tab" role="tab" id="tab-codes" aria-selected="false">Invite codes</button>
+      <button type="button" class="tab" role="tab" id="tab-advisers" aria-selected="false">Advisers</button>
     </div>
 
     <div id="pane-review" class="panel"><h2>Waiting for review</h2><div id="review-list"></div></div>
@@ -50,6 +51,12 @@
         <button class="btn btn--primary" type="submit">Create code</button>
       </form>
       <ul class="entries" id="code-list"></ul>
+    </div>
+
+    <div id="pane-advisers" class="panel" hidden>
+      <h2>Adviser photos</h2>
+      <p class="muted">Shown on the People page. Names come from every entry's adviser field. JPG, PNG or WebP, max 2 MB.</p>
+      <ul class="entries" id="adviser-list"></ul>
     </div>
   </section>
 </main>

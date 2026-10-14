@@ -6,7 +6,7 @@ Static site + Supabase backend (project `hive-archive`, Singapore).
 |---|---|---|
 | `index.html` | public | Browse approved entries (read-only) |
 | `portal.html` | researchers | Sign in, redeem invite code, create/edit own entry |
-| `admin.html` | ACES admins | Approve/reject, take down, issue invite codes |
+| `admin.html` | ACES admins | Approve/reject, take down, issue invite codes, adviser photos |
 
 ## Go live
 1. **Deploy** this folder to Vercel (project root = this folder). `vercel.json` adds the security headers.
