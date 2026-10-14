@@ -750,7 +750,7 @@ button {
 .acctbar__btn:hover { background: rgba(255, 255, 255, 0.08); }
 .acctbar__btn--primary { background: var(--honey-amber); border-color: var(--honey-amber); color: var(--comb-charcoal); }
 .acctbar__btn--primary:hover { background: var(--honey-light); }
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
   .acctbar { position: relative; top: auto; right: auto; justify-content: center; margin: 0 auto 1rem; }
   .site-header { display: flex; flex-direction: column; }
   .site-header .acctbar { order: -1; }
