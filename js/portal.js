@@ -58,8 +58,12 @@
   $("btn-forgot").addEventListener("click", async function () {
     const email = $("si-email").value.trim();
     if (!email) { say("Type your email above first.", "error"); return; }
-    await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
-    say("If that email has an account, a reset link is on its way.", "ok");
+    const r = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (r.error && (r.error.status === 429 || /rate limit/i.test(r.error.message || ""))) {
+      say("Too many emails were sent recently. Wait about an hour, then try again. Check your spam folder for an earlier link.", "error");
+      return;
+    }
+    say("If that email has an account, a reset link is on its way. Use the newest email; older links stop working.", "ok");
   });
 
   $("form-recovery").addEventListener("submit", async function (e) {
