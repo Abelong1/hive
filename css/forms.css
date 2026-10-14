@@ -121,3 +121,12 @@ details > summary { cursor: pointer; font-weight: 700; }
   .filters input[type="text"], .filters input[type="date"] { width: 100%; }
   .filters label { flex: 1 1 100%; }
 }
+
+/* ---------- account panel ---------- */
+.acct { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1.2rem; margin: 0 0 1rem; }
+.acct dt { font-weight: 700; color: var(--honey-text); }
+.acct dd { margin: 0; overflow-wrap: anywhere; }
+.acct-edit { margin-top: 0.6rem; }
+.acct-edit form { margin: 0.6rem 0 0; }
+.acct-edit input { flex: 1 1 14rem; }
+@media (max-width: 480px) { .acct { grid-template-columns: 1fr; } .acct dt { margin-top: 0.4rem; } }

@@ -76,6 +76,24 @@
       <ul class="entries" id="entries"></ul>
       <p class="muted" id="entries-empty" hidden>You have no entries yet.</p>
     </div>
+    <div class="panel">
+      <h2>Your account</h2>
+      <dl class="acct" id="acct-info"></dl>
+      <details class="acct-edit">
+        <summary>Change display name</summary>
+        <form id="form-name" class="topbar">
+          <input type="text" id="acct-name" maxlength="120" required aria-label="Display name">
+          <button class="btn btn--small btn--primary" type="submit">Save name</button>
+        </form>
+      </details>
+      <details class="acct-edit">
+        <summary>Change password</summary>
+        <form id="form-password" class="topbar">
+          <input type="password" id="acct-password" minlength="10" required autocomplete="new-password" aria-label="New password" placeholder="New password, at least 10 characters">
+          <button class="btn btn--small btn--primary" type="submit">Update password</button>
+        </form>
+      </details>
+    </div>
   </section>
 
   <!-- entry form -->

@@ -327,3 +327,15 @@ grant execute on function public.admin_restore(bigint) to authenticated;
 
 revoke all on function public.theses_audit(), public.researchers_audit_del(), public.researchers_audit_ins(),
   public.researchers_audit_upd(), public.advisers_audit(), public.codes_audit(), public.consent_audit() from public, anon, authenticated;
+
+-- Researchers can change their own display name (and nothing else on their profile).
+create or replace function public.update_my_name(p_full_name text) returns void
+language plpgsql security definer set search_path to '' as $$
+declare v text := left(btrim(coalesce(p_full_name, '')), 120);
+begin
+  if auth.uid() is null then raise exception 'not signed in' using errcode = '42501'; end if;
+  if char_length(v) < 2 then raise exception 'name too short' using errcode = 'P0001'; end if;
+  update public.profiles set full_name = v where id = auth.uid();
+end $$;
+revoke all on function public.update_my_name(text) from public, anon;
+grant execute on function public.update_my_name(text) to authenticated;

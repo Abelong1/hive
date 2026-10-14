@@ -31,6 +31,7 @@
   }
   $("tab-signin").addEventListener("click", function () { tab("in"); });
   $("tab-signup").addEventListener("click", function () { tab("up"); });
+  if (location.hash === "#signup") tab("up");
 
   $("form-signin").addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -107,12 +108,43 @@
     show("view-dash");
   }
 
+  // ---------- account ----------
+  function renderAccount() {
+    const dl = $("acct-info"), u = session.user;
+    H.clear(dl);
+    [["Name", profile.full_name || "—"], ["Email", u.email],
+     ["Role", profile.role === "admin" ? "ACES admin" : "Researcher"],
+     ["Member since", H.fmtDate(u.created_at)],
+     ["Email confirmed", u.email_confirmed_at ? H.fmtDate(u.email_confirmed_at) : "Not yet"],
+     ["Last sign-in", u.last_sign_in_at ? H.fmtDate(u.last_sign_in_at) : "—"]
+    ].forEach(function (d) { dl.append(el("dt", { text: d[0] }), el("dd", { text: d[1] })); });
+    $("acct-name").value = profile.full_name || "";
+  }
+  $("form-name").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const r = await sb.rpc("update_my_name", { p_full_name: $("acct-name").value });
+    if (r.error) { say("Could not save the name. Use at least 2 characters.", "error"); return; }
+    profile.full_name = $("acct-name").value.trim();
+    await loadEntries();
+    say("Name updated.", "ok");
+  });
+  $("form-password").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const pw = $("acct-password").value;
+    if (pw.length < 10) { say("Use a password of at least 10 characters.", "error"); return; }
+    const r = await sb.auth.updateUser({ password: pw });
+    if (r.error) { say("Could not change the password: " + r.error.message, "error"); return; }
+    $("acct-password").value = "";
+    say("Password updated.", "ok");
+  });
+
   // ---------- dashboard ----------
   async function loadEntries() {
     const sub = $("dash-sub");
     H.clear(sub);
     sub.append("Signed in as " + (profile.full_name || session.user.email) + ". ");
     if (profile.role === "admin") sub.append(el("a", { href: "admin.html", text: "Open admin panel" }));
+    renderAccount();
 
     const r = await sb.from("theses").select("id,title,school_year,status,updated_at")
       .eq("owner_id", session.user.id).order("updated_at", { ascending: false });
