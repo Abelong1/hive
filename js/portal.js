@@ -32,6 +32,14 @@
   $("tab-signin").addEventListener("click", function () { tab("in"); });
   $("tab-signup").addEventListener("click", function () { tab("up"); });
   if (location.hash === "#signup") tab("up");
+  if (/error_code=/.test(location.hash)) {
+    const expired = /otp_expired/.test(location.hash);
+    history.replaceState(null, "", location.pathname);
+    setTimeout(function () {
+      say(expired ? "That email link has expired or was already used. Each link works once; request a new one with \"Forgot password?\"."
+        : "That email link didn't work. Please request a new one.", "error");
+    }, 50);
+  }
 
   $("form-signin").addEventListener("submit", async function (e) {
     e.preventDefault();
