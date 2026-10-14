@@ -15,15 +15,19 @@
   const bar = el("nav", { class: "acctbar", "aria-label": "Account" });
   header.append(bar);
 
+  let seq = 0;
   async function render(session) {
-    H.clear(bar);
+    const mine = ++seq;
     if (!session) {
+      H.clear(bar);
       bar.append(
         el("a", { class: "acctbar__btn", href: "portal.html", text: "Sign in" }),
         el("a", { class: "acctbar__btn acctbar__btn--primary", href: "portal.html#signup", text: "Create account" }));
       return;
     }
     const r = await sb.from("profiles").select("full_name,role").eq("id", session.user.id).maybeSingle();
+    if (mine !== seq) return; // a newer auth event already re-rendered the bar
+    H.clear(bar);
     const p = r.data;
     bar.append(el("span", { class: "acctbar__who", text: (p && p.full_name) || session.user.email }));
     bar.append(el("a", { class: "acctbar__btn", href: "portal.html", text: p ? "My account" : "Finish sign-up" }));
