@@ -131,3 +131,31 @@ details > summary { cursor: pointer; font-weight: 700; }
 .acct-edit form { margin: 0.6rem 0 0; }
 .acct-edit input { flex: 1 1 14rem; }
 @media (max-width: 480px) { .acct { grid-template-columns: 1fr; } .acct dt { margin-top: 0.4rem; } }
+
+
+/* ---------------------------------------------------------------------------
+   MODERN REFRESH (dashboard pages)
+--------------------------------------------------------------------------- */
+.site-header--slim { padding: 1.1rem 1.5rem 1rem; }
+.site-header--slim h1 { font-size: clamp(1.25rem, 2.4vw, 1.6rem); font-weight: 600; margin-bottom: 0.15rem; }
+.site-header--slim p { font-size: 0.9rem; margin: 0 auto; }
+
+.panel { border: 1px solid var(--line-soft); box-shadow: var(--shadow-card); border-radius: 12px; }
+.panel h2 { font-weight: 600; font-size: 1.1rem; }
+.panel h3 { font-weight: 600; font-size: 0.95rem; }
+.entry { border-color: var(--line-soft); border-radius: 10px; }
+.stat { border-color: var(--line-soft); border-radius: 10px; }
+.stat__n { font-weight: 600; font-size: 1.6rem; }
+
+/* Tabs: plain text with an underline for the active one */
+.tabs { gap: 0.25rem; border-bottom: 1px solid var(--line); margin-bottom: 1.1rem; flex-wrap: nowrap; overflow-x: auto; }
+.tab {
+  background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+  padding: 0.55rem 0.85rem; margin-bottom: -1px; color: var(--comb-charcoal-soft);
+  font-weight: 500; white-space: nowrap; cursor: pointer;
+}
+.tab:hover { color: var(--ink); background: rgba(36, 28, 16, 0.03); }
+.tab[aria-selected="true"] { background: none; color: var(--honey-text); border-color: var(--honey-amber); font-weight: 600; }
+.panel > .tabs { margin-top: -0.25rem; }
+
+.btn { font-weight: 600; }

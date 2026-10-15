@@ -49,11 +49,23 @@
     const p = r.data;
     drawLinks(!!p, !!(p && p.role === "admin"));
     H.clear(right);
-    right.append(el("a", { class: "topnav__who", href: "portal.html", title: "Your account",
-      text: (p && p.full_name) || session.user.email }));
     if (!p) right.append(el("a", { class: "topnav__btn topnav__btn--primary", href: "portal.html", text: "Finish sign-up" }));
-    right.append(el("button", { class: "topnav__btn", type: "button", text: "Sign out",
-      onclick: async function () { await sb.auth.signOut(); } }));
+    const menu = el("div", { class: "topnav__dropdown", role: "menu", hidden: true }, [
+      el("div", { class: "topnav__email", text: session.user.email }),
+      el("a", { class: "topnav__item", role: "menuitem", href: "portal.html", text: p ? "My account & entries" : "Finish sign-up" }),
+      p && p.role === "admin" ? el("a", { class: "topnav__item", role: "menuitem", href: "admin.html", text: "Admin panel" }) : null,
+      p && p.role === "admin" ? el("a", { class: "topnav__item", role: "menuitem", href: "activity.html", text: "Activity logs" }) : null,
+      el("button", { class: "topnav__item topnav__item--danger", role: "menuitem", type: "button", text: "Sign out",
+        onclick: async function () { await sb.auth.signOut(); } })
+    ]);
+    const who = el("button", { class: "topnav__who", type: "button", "aria-haspopup": "menu", "aria-expanded": "false",
+      text: (p && p.full_name) || session.user.email });
+    function setOpen(open) { menu.hidden = !open; who.setAttribute("aria-expanded", String(open)); }
+    who.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden); });
+    document.addEventListener("click", function (e) { if (!wrap.contains(e.target)) setOpen(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") setOpen(false); });
+    const wrap = el("div", { class: "topnav__menu" }, [who, menu]);
+    right.append(wrap);
   }
 
   sb.auth.onAuthStateChange(function (event, s) {
