@@ -488,8 +488,8 @@
           '<div class="access-box">' +
             "<strong>Want the full manuscript?</strong>" +
             "Full thesis documents are not published openly to protect participant data and " +
-            "department records. To request a copy for academic reference, email the CPE " +
-            "Program Office at <a href=\"mailto:cpe.department@sti-caloocan.edu.ph\">cpe.department@sti-caloocan.edu.ph</a> " +
+            "department records. To request a copy for academic reference, email ACES " +
+            "at <a href=\"mailto:hiveaces@gmail.com\">hiveaces@gmail.com</a> " +
             "with the thesis ID (" + escapeHTML(entry.id) + "), your name, and your reason for the request." +
           "</div>" +
         "</div>" +
