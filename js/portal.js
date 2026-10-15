@@ -63,15 +63,34 @@
     else say("Almost done. Open the confirmation link we emailed you, then sign in here.", "ok");
   });
 
+  let forgotBusy = false;
   $("btn-forgot").addEventListener("click", async function () {
+    const btn = $("btn-forgot");
     const email = $("si-email").value.trim();
-    if (!email) { say("Type your email above first.", "error"); return; }
+    if (forgotBusy) return;
+    if (!email) { say("Type your email above first.", "error"); $("si-email").focus(); return; }
+    forgotBusy = true;
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+    say("Sending the reset email…");
     const r = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
-    if (r.error && (r.error.status === 429 || /rate limit/i.test(r.error.message || ""))) {
-      say("Too many emails were sent recently. Wait about an hour, then try again. Check your spam folder for an earlier link.", "error");
+    if (r.error) {
+      forgotBusy = false; btn.disabled = false; btn.textContent = "Forgot password?";
+      if (r.error.status === 429 || /rate limit/i.test(r.error.message || "")) {
+        say("Too many reset emails were requested. Wait a few minutes, then try again.", "error");
+      } else {
+        say("Could not send the reset email right now. Please try again in a minute.", "error");
+      }
       return;
     }
-    say("If that email has an account, a reset link is on its way. Use the newest email; older links stop working.", "ok");
+    say("Reset email sent to " + email + ". Check your inbox and spam folder. Only the newest email's link works.", "ok");
+    // One email per minute: a second request would make the first link stop working.
+    let left = 60;
+    const t = setInterval(function () {
+      left--;
+      btn.textContent = "Resend in " + left + "s";
+      if (left <= 0) { clearInterval(t); forgotBusy = false; btn.disabled = false; btn.textContent = "Forgot password?"; }
+    }, 1000);
   });
 
   $("form-recovery").addEventListener("submit", async function (e) {

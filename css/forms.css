@@ -60,6 +60,7 @@ input[type="file"] { font: inherit; max-width: 100%; }
 .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.2rem; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--honey-text); text-decoration: underline; font: inherit; cursor: pointer; }
+.linkbtn[disabled] { color: var(--comb-charcoal-soft); text-decoration: none; cursor: default; }
 
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
 
