@@ -646,31 +646,23 @@ button {
 /* ---------------------------------------------------------------------------
    7. SMALL SCREENS — collapse to a single stacked column
    ----------------------------------------------------------------------------
-   Below the breakpoint, app.js switches the layout mode to "stacked"
-   (one item per row, no offset). We also relax the hexagon clip-path here
-   into a soft rounded rectangle, since a true hex reads poorly as a tall
-   narrow single column on a phone.
+   Below the breakpoint, archive.js switches to "compact" mode: hexes are
+   resized to fit 2 per row, with a single centered cell on offset rows
+   (2-1-2-1 honeycomb). Text is scaled down to fit the smaller cells.
 --------------------------------------------------------------------------- */
 @media (max-width: 640px) {
-  .honeycomb.is-stacked .hex-row {
-    margin-top: 0.9rem !important;
-    margin-left: 0 !important;
-  }
+  .grid-section { padding: 0 0.75rem; }
 
-  .honeycomb.is-stacked .hex-cell {
-    width: min(320px, 88vw);
-    height: auto;
-  }
+  /* offset row is a single centered cell, so it nests without a shift */
+  .honeycomb.is-compact .hex-row--offset { margin-left: 0; }
 
-  .honeycomb.is-stacked .hex-cell__button {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    clip-path: none;
-    border-radius: var(--radius-soft);
-    padding: 1.3rem 1.4rem;
-    aspect-ratio: auto;
+  .honeycomb.is-compact .hex-cell__button {
+    padding: 1.6rem 0.85rem;
   }
+  .honeycomb.is-compact .hex-cell__year { font-size: 0.62rem; margin-bottom: 0.3rem; }
+  .honeycomb.is-compact .hex-cell__title { font-size: 0.8rem; line-height: 1.2; -webkit-line-clamp: 4; }
+  .honeycomb.is-compact .hex-cell__tag { font-size: 0.58rem; margin-top: 0.3rem; }
+  .honeycomb.is-compact .hex-cell__button:hover { transform: none; }
 
   .toolbar__inner { padding: 1rem; }
   .modal__header, .modal__body { padding-left: 1.25rem; padding-right: 1.25rem; }

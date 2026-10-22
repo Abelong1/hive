@@ -186,24 +186,37 @@
   // other row by half a hex-width and keep the pattern gapless as the
   // filtered list shrinks or grows. Flex-wrap alone can't tell us that.
   function buildHoneycombRows(entries, container, noStack) {
-    const isStacked = !noStack && window.matchMedia("(max-width: 640px)").matches;
-    container.classList.toggle("is-stacked", isStacked);
+    // Phones: keep the hexagons, but size them so 2 fit per row and the
+    // offset row (1 cell) nests centered between them (2-1-2-1 pattern).
+    const isCompact = !noStack && window.matchMedia("(max-width: 640px)").matches;
+    container.classList.toggle("is-compact", isCompact);
+    container.style.removeProperty("--hex-w");
+    container.style.removeProperty("--hex-h");
+    container.style.removeProperty("--hex-gap");
 
-    if (isStacked) {
-      return entries.map(function (entry) { return [entry]; });
-    }
-
-    const styles = getComputedStyle(container);
-    const hexW = parseFloat(styles.getPropertyValue("--hex-w"));
-    const gap = parseFloat(styles.getPropertyValue("--hex-gap"));
     const containerWidth = container.clientWidth || 900;
+    let perRow, perOffsetRow;
 
-    // How many normal (non-offset) hexes fit side by side.
-    let perRow = Math.max(1, Math.floor((containerWidth + gap) / (hexW + gap)));
+    if (isCompact) {
+      const gap = 8;
+      const hexW = Math.min(180, Math.floor((containerWidth - gap) / 2));
+      container.style.setProperty("--hex-gap", gap + "px");
+      container.style.setProperty("--hex-w", hexW + "px");
+      container.style.setProperty("--hex-h", Math.round(hexW * 1.1547) + "px");
+      perRow = 2;
+      perOffsetRow = 1;
+    } else {
+      const styles = getComputedStyle(container);
+      const hexW = parseFloat(styles.getPropertyValue("--hex-w"));
+      const gap = parseFloat(styles.getPropertyValue("--hex-gap"));
 
-    // Offset rows are shifted right by half a tile width, so they can fit
-    // at most one fewer cell without overflowing the right edge.
-    const perOffsetRow = Math.max(1, perRow - 1);
+      // How many normal (non-offset) hexes fit side by side.
+      perRow = Math.max(1, Math.floor((containerWidth + gap) / (hexW + gap)));
+
+      // Offset rows are shifted right by half a tile width, so they can fit
+      // at most one fewer cell without overflowing the right edge.
+      perOffsetRow = Math.max(1, perRow - 1);
+    }
 
     const rows = [];
     let i = 0;
