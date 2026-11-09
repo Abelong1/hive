@@ -206,13 +206,15 @@
     let perRow, perOffsetRow;
 
     if (isCompact) {
-      const gap = 8;
-      const hexW = Math.min(180, Math.floor((containerWidth - gap) / 2));
+      // 3-2-3 on most phones (short titles only); 2-1-2 on very narrow screens.
+      const gap = 6;
+      const cols = containerWidth >= 330 ? 3 : 2;
+      const hexW = Math.min(150, Math.floor((containerWidth - gap * (cols - 1)) / cols));
       container.style.setProperty("--hex-gap", gap + "px");
       container.style.setProperty("--hex-w", hexW + "px");
       container.style.setProperty("--hex-h", Math.round(hexW * 1.1547) + "px");
-      perRow = 2;
-      perOffsetRow = 1;
+      perRow = cols;
+      perOffsetRow = cols - 1;
     } else {
       const styles = getComputedStyle(container);
       const hexW = parseFloat(styles.getPropertyValue("--hex-w"));
@@ -290,11 +292,19 @@
 
     const yearSpan = document.createElement("span");
     yearSpan.className = "hex-cell__year";
-    yearSpan.textContent = "S.Y. " + entry.schoolYear;
+    const yr = String(entry.schoolYear || "").split("-");
+    yearSpan.innerHTML = '<span class="hex-cell__long">S.Y. ' + entry.schoolYear + '</span>' +
+      '<span class="hex-cell__short">' + (yr.length === 2 ? yr[0] + "–" + yr[1].slice(-2) : entry.schoolYear) + '</span>';
 
+    // Phones show only the project name (text before the colon).
+    const colon = entry.title.indexOf(":");
+    const shortTitle = colon > 0 && colon <= 40 ? entry.title.slice(0, colon) : entry.title;
     const titleSpan = document.createElement("span");
     titleSpan.className = "hex-cell__title";
-    titleSpan.textContent = entry.title;
+    titleSpan.innerHTML = "";
+    const longT = document.createElement("span"); longT.className = "hex-cell__long"; longT.textContent = entry.title;
+    const shortT = document.createElement("span"); shortT.className = "hex-cell__short"; shortT.textContent = shortTitle;
+    titleSpan.append(longT, shortT);
 
     const tagSpan = document.createElement("span");
     tagSpan.className = "hex-cell__tag";
