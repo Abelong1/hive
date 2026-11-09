@@ -57,7 +57,7 @@
     r.data.forEach(function (t) {
       const people = (t.researchers || []).slice().sort(function (a, b) { return a.position - b.position; });
       const dl = el("dl", {}, [].concat(
-        field("Adviser", t.adviser), field("Abstract", t.abstract), field("Conclusion", t.conclusion),
+        field("Adviser", t.adviser), field("Verdict", t.verdict || ""), field("Abstract", t.abstract), field("Conclusion", t.conclusion),
         field("Recommendations", t.recommendations), field("Tags", t.tags.join(", ")),
         field("Technologies", t.technologies.join(", ")), field("References", t.refs.join("\n")),
         field("Researchers", people.map(function (p) { return p.name + (p.photo_url ? " (photo)" : ""); }).join("\n")),

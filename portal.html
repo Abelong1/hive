@@ -112,6 +112,16 @@
       <label class="field"><span>Technologies <small>Comma-separated, up to 20.</small></span><input type="text" id="f-tech"></label>
       <label class="field"><span>References <small>One citation per line, up to 30. Citations only, no excerpted text.</small></span><textarea id="f-refs"></textarea></label>
 
+      <h3>Defense verdict (optional)</h3>
+      <label class="field"><span>Verdict <small>Shown as a banner across the bottom of your first photo.</small></span>
+        <input type="text" id="f-verdict" maxlength="60" list="verdict-options" placeholder="OUTRIGHT PASS"></label>
+      <datalist id="verdict-options">
+        <option value="OUTRIGHT PASS"></option>
+        <option value="PASSED WITH MINOR REVISIONS"></option>
+        <option value="PASSED WITH MAJOR REVISIONS"></option>
+        <option value="FOR RE-DEFENSE"></option>
+      </datalist>
+
       <h3>Prototype / device photo (optional)</h3>
       <label class="field"><span>Photo <small>JPG, PNG or WebP, max 2 MB.</small></span><input type="file" id="f-photo" accept="image/jpeg,image/png,image/webp"></label>
       <p class="muted" id="f-photo-status"></p>

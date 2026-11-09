@@ -787,3 +787,24 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.015em; }
 .topnav__item:hover, .topnav__item:focus-visible { background: var(--wax-cream); outline: none; }
 .topnav__item--danger { color: #7A1D10; }
 @media (max-width: 640px) { .topnav__menu { margin-left: auto; } }
+
+
+/* Defense verdict banner, overlaid across the bottom of the first photo */
+.modal__photo-wrap { position: relative; border-radius: 12px; overflow: hidden; }
+.modal__photo-wrap .modal__photo { border-radius: 12px; }
+.verdict-banner {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem; flex-wrap: wrap;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(90deg, rgba(36, 28, 16, 0.92), rgba(58, 46, 26, 0.92));
+  border-top: 3px solid var(--honey-amber);
+  color: #fff; text-align: center;
+}
+.verdict-banner__label {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--honey-light);
+}
+.verdict-banner__label::after { content: ":"; }
+.verdict-banner__value {
+  font-size: clamp(1rem, 2.6vw, 1.35rem); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--honey-amber);
+}
+.verdict-banner--inline { position: static; border-radius: 10px; margin-bottom: 1.4rem; border-top: 0; border-left: 4px solid var(--honey-amber); }

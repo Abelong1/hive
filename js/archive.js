@@ -72,14 +72,14 @@
     try {
       const cfg = window.HIVE_CONFIG;
       const cols = "id,title,school_year,year_sort,adviser,abstract,conclusion,recommendations," +
-        "tags,technologies,refs,device_photo_url,device_photo_caption,defense_photo_url,defense_photo_caption,researchers(name,photo_url,position)";
+        "tags,technologies,refs,device_photo_url,device_photo_caption,defense_photo_url,defense_photo_caption,verdict,researchers(name,photo_url,position)";
       const q = function (c) {
         return fetch(cfg.url + "/rest/v1/theses?select=" + encodeURIComponent(c) +
           "&status=eq.approved&order=year_sort.desc,created_at.desc", { headers: { apikey: cfg.key } });
       };
       let res = await q(cols);
       // Database without the defense-photo columns yet: load without them.
-      if (res.status === 400 || res.status === 401) res = await q(cols.replace("defense_photo_url,defense_photo_caption,", ""));
+      if (res.status === 400 || res.status === 401) res = await q(cols.replace("defense_photo_url,defense_photo_caption,verdict,", ""));
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       THESIS_DATA = rows.map(mapRow);
@@ -114,6 +114,7 @@
       devicePhotoCaption: t.device_photo_caption || "",
       defensePhoto: t.defense_photo_url || "",
       defensePhotoCaption: t.defense_photo_caption || "",
+      verdict: t.verdict || "",
       researchers: (t.researchers || []).slice()
         .sort(function (a, b) { return a.position - b.position; })
         .map(function (r) { return { name: r.name, photo: r.photo_url || "" }; })
@@ -451,12 +452,19 @@
   }
 
   function buildModalHTML(entry) {
+    let verdictShown = false;
     function figure(url, caption, label) {
       const u = safeUrl(url);
       if (!u) return "";
+      let banner = "";
+      if (entry.verdict && !verdictShown) {
+        verdictShown = true;
+        banner = '<div class="verdict-banner"><span class="verdict-banner__label">Verdict</span>' +
+          '<span class="verdict-banner__value">' + escapeHTML(entry.verdict) + "</span></div>";
+      }
       return '<figure class="modal__figure"><span class="modal__figure-label">' + label + "</span>" +
-        '<img class="modal__photo" src="' + escapeHTML(u) + '" referrerpolicy="no-referrer" loading="lazy" alt="' +
-        escapeHTML(caption || label + " — " + entry.title) + '">' +
+        '<div class="modal__photo-wrap"><img class="modal__photo" src="' + escapeHTML(u) + '" referrerpolicy="no-referrer" loading="lazy" alt="' +
+        escapeHTML(caption || label + " — " + entry.title) + '">' + banner + "</div>" +
         (caption ? '<figcaption class="modal__photo-caption">' + escapeHTML(caption) + "</figcaption>" : "") +
         "</figure>";
     }
@@ -464,7 +472,10 @@
                  figure(entry.defensePhoto, entry.defensePhotoCaption, "Defense");
     const photoHTML = figs
       ? '<div class="modal__photos">' + figs + "</div>"
-      : '<div class="modal__photo-placeholder">No photos on file yet for this entry.</div>';
+      : (entry.verdict
+          ? '<div class="verdict-banner verdict-banner--inline"><span class="verdict-banner__label">Verdict</span>' +
+            '<span class="verdict-banner__value">' + escapeHTML(entry.verdict) + "</span></div>"
+          : '<div class="modal__photo-placeholder">No photos on file yet for this entry.</div>');
     const captionHTML = "";
 
     const tagsHTML = entry.tags.map(function (t) { return "<span>" + escapeHTML(t) + "</span>"; }).join("");
