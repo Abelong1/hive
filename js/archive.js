@@ -72,14 +72,14 @@
     try {
       const cfg = window.HIVE_CONFIG;
       const cols = "id,title,school_year,year_sort,adviser,abstract,conclusion,recommendations," +
-        "tags,technologies,refs,device_photo_url,device_photo_caption,defense_photo_url,defense_photo_caption,verdict,researchers(name,photo_url,position)";
+        "tags,technologies,refs,adviser_photo_url,device_photo_url,device_photo_caption,defense_photo_url,defense_photo_caption,verdict,researchers(name,photo_url,position)";
       const q = function (c) {
         return fetch(cfg.url + "/rest/v1/theses?select=" + encodeURIComponent(c) +
           "&status=eq.approved&order=year_sort.desc,created_at.desc", { headers: { apikey: cfg.key } });
       };
       let res = await q(cols);
       // Database without the defense-photo columns yet: load without them.
-      if (res.status === 400 || res.status === 401) res = await q(cols.replace("defense_photo_url,defense_photo_caption,verdict,", ""));
+      if (res.status === 400 || res.status === 401) res = await q(cols.replace("adviser_photo_url,", "").replace("defense_photo_url,defense_photo_caption,verdict,", ""));
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       THESIS_DATA = rows.map(mapRow);
@@ -115,6 +115,7 @@
       defensePhoto: t.defense_photo_url || "",
       defensePhotoCaption: t.defense_photo_caption || "",
       verdict: t.verdict || "",
+      adviserPhoto: t.adviser_photo_url || "",
       researchers: (t.researchers || []).slice()
         .sort(function (a, b) { return a.position - b.position; })
         .map(function (r) { return { name: r.name, photo: r.photo_url || "" }; })
@@ -334,7 +335,7 @@
       map.set(key, p);
     }
     THESIS_DATA.forEach(function (t) {
-      add(advisers, t.adviser, ADVISER_PHOTOS[String(t.adviser || "").trim().toLowerCase()] || "");
+      add(advisers, t.adviser, ADVISER_PHOTOS[String(t.adviser || "").trim().toLowerCase()] || t.adviserPhoto || "");
       t.researchers.forEach(function (r) { add(researchers, r.name, r.photo); });
     });
     function sorted(map) {
@@ -481,7 +482,20 @@
     const tagsHTML = entry.tags.map(function (t) { return "<span>" + escapeHTML(t) + "</span>"; }).join("");
     const authorsHTML = escapeHTML(entry.researchers.map(function (r) { return r.name; }).join(", "));
     const techHTML = entry.technologies.map(function (t) { return "<li>" + escapeHTML(t) + "</li>"; }).join("");
-    const researchersHTML = entry.researchers.map(function (r) {
+    function personCard(name, photo, role) {
+      const rPhoto = safeUrl(photo);
+      const photoBit = rPhoto
+        ? '<img class="researcher-card__photo" src="' + escapeHTML(rPhoto) + '" referrerpolicy="no-referrer" loading="lazy" alt="' + escapeHTML(name) + '">'
+        : '<div class="researcher-card__photo researcher-card__photo--placeholder" aria-hidden="true">' +
+          escapeHTML(name.replace(/^(engr|dr|prof|mr|ms|mrs)\.?\s+/i, "").split(" ").map(function (n) { return n[0] || ""; }).join("").slice(0, 2)) +
+          "</div>";
+      return '<div class="researcher-card' + (role ? " researcher-card--adviser" : "") + '">' + photoBit +
+        '<span class="researcher-card__name">' + escapeHTML(name) + "</span>" +
+        (role ? '<span class="researcher-card__role">' + role + "</span>" : "") + "</div>";
+    }
+    const adviserPhoto = ADVISER_PHOTOS[String(entry.adviser || "").trim().toLowerCase()] || entry.adviserPhoto;
+    const adviserCard = entry.adviser ? personCard(entry.adviser, adviserPhoto, "Adviser") : "";
+    const researchersHTML = adviserCard + entry.researchers.map(function (r) {
       const rPhoto = safeUrl(r.photo);
       const photoBit = rPhoto
         ? '<img class="researcher-card__photo" src="' + escapeHTML(rPhoto) + '" referrerpolicy="no-referrer" loading="lazy" alt="' + escapeHTML(r.name) + '">'
@@ -510,7 +524,7 @@
           "<h3>Abstract</h3><p>" + escapeHTML(entry.abstract) + "</p>" +
         "</div>" +
         '<div class="modal__section">' +
-          "<h3>Researchers</h3><div class=\"researcher-list\">" + researchersHTML + "</div>" +
+          "<h3>Adviser &amp; Researchers</h3><div class=\"researcher-list\">" + researchersHTML + "</div>" +
         "</div>" +
         '<div class="modal__section">' +
           "<h3>Technologies & Methodologies</h3><ul class=\"modal__chip-list\">" + techHTML + "</ul>" +

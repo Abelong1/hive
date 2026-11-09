@@ -20,7 +20,7 @@
   const FIELD_NAMES = {
     title: "Title", school_year: "School year", adviser: "Adviser", abstract: "Abstract", conclusion: "Conclusion",
     recommendations: "Recommendations", tags: "Tags", technologies: "Technologies", refs: "References",
-    device_photo_url: "Device photo", device_photo_caption: "Photo caption", defense_photo_url: "Defense photo", defense_photo_caption: "Defense caption", verdict: "Verdict", researchers: "Researchers",
+    device_photo_url: "Device photo", device_photo_caption: "Photo caption", defense_photo_url: "Defense photo", defense_photo_caption: "Defense caption", verdict: "Verdict", adviser_photo_url: "Adviser photo", researchers: "Researchers",
     status: "Status", photo_url: "Photo", consent_given: "Consent", groupmates_informed: "Groupmates informed",
     note: "Note", expires_at: "Expires", notice_version: "Notice version"
   };

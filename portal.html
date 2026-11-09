@@ -105,6 +105,18 @@
         <label class="field"><span>School year</span><select id="f-year"></select></label>
         <label class="field"><span>Adviser</span><input type="text" id="f-adviser" maxlength="120" placeholder="Engr. F. Lastname" required></label>
       </div>
+      <div class="rcard rcard--adviser" id="adviser-card">
+        <div class="rcard__photo rcard__photo--empty" id="adv-thumb" aria-hidden="true">?</div>
+        <div class="rcard__body">
+          <span class="rcard__label">Adviser photo (optional)</span>
+          <div class="rcard__actions">
+            <label class="btn btn--small" for="f-advphoto" id="adv-pick">Add photo</label>
+            <input type="file" id="f-advphoto" class="visually-hidden" accept="image/jpeg,image/png,image/webp">
+            <button class="btn btn--small" type="button" id="adv-clear" hidden>Remove photo</button>
+          </div>
+          <p class="rcard__status muted" id="adv-status"></p>
+        </div>
+      </div>
       <label class="field"><span>Abstract <small>Up to 4000 characters.</small></span><textarea id="f-abstract" maxlength="4000" required></textarea></label>
       <label class="field"><span>Conclusion</span><textarea id="f-conclusion" maxlength="3000"></textarea></label>
       <label class="field"><span>Recommendations for future researchers</span><textarea id="f-recs" maxlength="3000"></textarea></label>

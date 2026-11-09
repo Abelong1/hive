@@ -173,3 +173,4 @@ details > summary { cursor: pointer; font-weight: 700; }
 .rcard__actions input[type="file"]:focus-visible + * { outline: 2px solid var(--honey-dark); }
 .rcard__status { margin: 0; font-size: 0.8rem; }
 .rcard__status:empty { display: none; }
+.rcard--adviser { margin: 0 0 1rem; max-width: 26rem; }

@@ -808,3 +808,6 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.015em; }
   font-size: clamp(1rem, 2.6vw, 1.35rem); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--honey-amber);
 }
 .verdict-banner--inline { position: static; border-radius: 10px; margin-bottom: 1.4rem; border-top: 0; border-left: 4px solid var(--honey-amber); }
+
+.researcher-card__role { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--honey-text); }
+.researcher-card--adviser .researcher-card__photo { border-color: var(--comb-charcoal); }
