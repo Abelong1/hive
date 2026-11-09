@@ -10,6 +10,63 @@
   let THESIS_DATA = [];
   const ADVISER_PHOTOS = {};
 
+  // ---- admin: change people's photos straight from the People page ----
+  // The database (row-level security) is what actually enforces admin-only writes;
+  // this only decides whether to show the photo buttons.
+  let ADMIN = null; // { sb, uid } when the signed-in user is an admin
+  (async function detectAdmin() {
+    try {
+      if (!window.supabase || !window.Hive) return;
+      const sb = window.Hive.client();
+      const s = (await sb.auth.getSession()).data.session;
+      if (!s) return;
+      const r = await sb.from("profiles").select("role").eq("id", s.user.id).maybeSingle();
+      if (r.data && r.data.role === "admin") { ADMIN = { sb: sb, uid: s.user.id }; renderPeople(); }
+    } catch (e) { /* not signed in: public view */ }
+  })();
+
+  // Shrink to max 600px JPEG in the browser (phone photos are often > 2 MB).
+  function shrinkImage(file) {
+    return new Promise(function (resolve, reject) {
+      if (!/^image\//.test(file.type)) return reject(new Error("Choose an image file."));
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = function () {
+        const k = Math.min(1, 600 / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (b) { b ? resolve(b) : reject(new Error("Could not read that image.")); }, "image/jpeg", 0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("Could not read that image.")); };
+      img.src = url;
+    });
+  }
+
+  async function savePersonPhoto(p, file) {
+    const sb = ADMIN.sb;
+    let photoUrl = "";
+    if (file) {
+      const blob = await shrinkImage(file);
+      const path = ADMIN.uid + "/" + crypto.randomUUID() + ".jpg";
+      const up = await sb.storage.from("photos").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+      if (up.error) throw new Error("Upload failed.");
+      photoUrl = sb.storage.from("photos").getPublicUrl(path).data.publicUrl;
+    }
+    const pattern = p.name.replace(/[\\%_]/g, "\\$&"); // exact, case-insensitive match
+    if (p.kind === "adviser") {
+      const a = await sb.from("advisers").upsert({ name_key: p.name.trim().toLowerCase(), name: p.name.trim(), photo_url: photoUrl });
+      if (a.error) throw new Error("Could not save the adviser photo.");
+      await sb.from("theses").update({ adviser_photo_url: photoUrl }).ilike("adviser", pattern);
+      ADVISER_PHOTOS[p.name.trim().toLowerCase()] = photoUrl;
+    } else {
+      const r = await sb.from("researchers").update({ photo_url: photoUrl }).ilike("name", pattern);
+      if (r.error) throw new Error("Could not save the photo.");
+    }
+    await loadData();
+  }
+
   // ---- DOM refs --------------------------------------------------------------
   const gridEl = document.getElementById("honeycomb");
   const searchInput = document.getElementById("search-input");
@@ -339,7 +396,7 @@
       name = String(name || "").trim();
       if (!name) return;
       const key = name.toLowerCase();
-      const p = map.get(key) || { name: name, photo: "", count: 0 };
+      const p = map.get(key) || { name: name, photo: "", count: 0, kind: map === advisers ? "adviser" : "researcher" };
       p.count++;
       if (!p.photo && photo) p.photo = photo;
       map.set(key, p);
@@ -425,7 +482,40 @@
       window.scrollTo({ top: 0 });
     });
     cell.appendChild(btn);
+    if (ADMIN) cell.appendChild(buildPhotoTools(p));
     return cell;
+  }
+
+  function buildPhotoTools(p) {
+    const wrap = document.createElement("span");
+    wrap.className = "person__admin";
+    const input = document.createElement("input");
+    input.type = "file"; input.accept = "image/*"; input.hidden = true;
+    const pick = document.createElement("button");
+    pick.type = "button"; pick.className = "person__admin-btn";
+    pick.textContent = p.photo ? "Change" : "Add photo";
+    pick.setAttribute("aria-label", (p.photo ? "Change photo of " : "Add photo for ") + p.name);
+    pick.addEventListener("click", function (e) { e.stopPropagation(); input.click(); });
+    input.addEventListener("change", async function () {
+      const f = input.files[0];
+      if (!f) return;
+      pick.disabled = true; pick.textContent = "Saving…";
+      try { await savePersonPhoto(p, f); } catch (err) { alert(err.message); pick.disabled = false; pick.textContent = "Retry"; }
+    });
+    wrap.append(pick, input);
+    if (p.photo) {
+      const rm = document.createElement("button");
+      rm.type = "button"; rm.className = "person__admin-btn person__admin-btn--rm"; rm.textContent = "✕";
+      rm.setAttribute("aria-label", "Remove photo of " + p.name);
+      rm.addEventListener("click", async function (e) {
+        e.stopPropagation();
+        if (!confirm("Remove the photo of " + p.name + "?")) return;
+        rm.disabled = true;
+        try { await savePersonPhoto(p, null); } catch (err) { alert(err.message); rm.disabled = false; }
+      });
+      wrap.append(rm);
+    }
+    return wrap;
   }
 
   // ---- modal -------------------------------------------------------

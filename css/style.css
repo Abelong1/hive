@@ -862,3 +862,15 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.015em; }
   .people__heading { font-size: 1.2rem; }
   .people__note { font-size: 0.78rem; }
 }
+
+/* Admin-only photo buttons on People hexes */
+.person__admin { position: absolute; top: 9%; left: 0; right: 0; z-index: 3; display: flex; justify-content: center; gap: 4px; pointer-events: none; }
+.person__admin-btn {
+  pointer-events: auto; font: inherit; font-size: 0.68rem; font-weight: 700; cursor: pointer;
+  padding: 0.18rem 0.55rem; border-radius: 999px; border: 0;
+  background: var(--honey-amber); color: var(--comb-charcoal); box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+}
+.person__admin-btn:hover { background: var(--honey-light); }
+.person__admin-btn--rm { background: #fff; padding: 0.18rem 0.45rem; }
+.person__admin-btn:disabled { opacity: 0.7; cursor: wait; }
+@media (max-width: 640px) { .person__admin-btn { font-size: 0.58rem; padding: 0.12rem 0.4rem; } }
