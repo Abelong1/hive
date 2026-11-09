@@ -72,10 +72,14 @@
     try {
       const cfg = window.HIVE_CONFIG;
       const cols = "id,title,school_year,year_sort,adviser,abstract,conclusion,recommendations," +
-        "tags,technologies,refs,device_photo_url,device_photo_caption,researchers(name,photo_url,position)";
-      const url = cfg.url + "/rest/v1/theses?select=" + encodeURIComponent(cols) +
-        "&status=eq.approved&order=year_sort.desc,created_at.desc";
-      const res = await fetch(url, { headers: { apikey: cfg.key } });
+        "tags,technologies,refs,device_photo_url,device_photo_caption,defense_photo_url,defense_photo_caption,researchers(name,photo_url,position)";
+      const q = function (c) {
+        return fetch(cfg.url + "/rest/v1/theses?select=" + encodeURIComponent(c) +
+          "&status=eq.approved&order=year_sort.desc,created_at.desc", { headers: { apikey: cfg.key } });
+      };
+      let res = await q(cols);
+      // Database without the defense-photo columns yet: load without them.
+      if (res.status === 400) res = await q(cols.replace("defense_photo_url,defense_photo_caption,", ""));
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       THESIS_DATA = rows.map(mapRow);
@@ -108,6 +112,8 @@
       references: t.refs || [],
       devicePhoto: t.device_photo_url || "",
       devicePhotoCaption: t.device_photo_caption || "",
+      defensePhoto: t.defense_photo_url || "",
+      defensePhotoCaption: t.defense_photo_caption || "",
       researchers: (t.researchers || []).slice()
         .sort(function (a, b) { return a.position - b.position; })
         .map(function (r) { return { name: r.name, photo: r.photo_url || "" }; })
@@ -441,15 +447,21 @@
   }
 
   function buildModalHTML(entry) {
-    const devPhoto = safeUrl(entry.devicePhoto);
-    const photoHTML = devPhoto
-      ? '<img class="modal__photo" src="' + escapeHTML(devPhoto) + '" referrerpolicy="no-referrer" loading="lazy" alt="' +
-        escapeHTML(entry.devicePhotoCaption || entry.title) + '">'
-      : '<div class="modal__photo-placeholder">No prototype photo on file yet for this entry.</div>';
-
-    const captionHTML = entry.devicePhotoCaption
-      ? '<p class="modal__photo-caption">' + escapeHTML(entry.devicePhotoCaption) + "</p>"
-      : "";
+    function figure(url, caption, label) {
+      const u = safeUrl(url);
+      if (!u) return "";
+      return '<figure class="modal__figure"><span class="modal__figure-label">' + label + "</span>" +
+        '<img class="modal__photo" src="' + escapeHTML(u) + '" referrerpolicy="no-referrer" loading="lazy" alt="' +
+        escapeHTML(caption || label + " — " + entry.title) + '">' +
+        (caption ? '<figcaption class="modal__photo-caption">' + escapeHTML(caption) + "</figcaption>" : "") +
+        "</figure>";
+    }
+    const figs = figure(entry.devicePhoto, entry.devicePhotoCaption, "Prototype") +
+                 figure(entry.defensePhoto, entry.defensePhotoCaption, "Defense");
+    const photoHTML = figs
+      ? '<div class="modal__photos">' + figs + "</div>"
+      : '<div class="modal__photo-placeholder">No photos on file yet for this entry.</div>';
+    const captionHTML = "";
 
     const tagsHTML = entry.tags.map(function (t) { return "<span>" + escapeHTML(t) + "</span>"; }).join("");
     const authorsHTML = escapeHTML(entry.researchers.map(function (r) { return r.name; }).join(", "));

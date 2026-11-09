@@ -64,7 +64,7 @@
         field("Consent", (t.consent_given ? "Consent given " + H.fmtDate(t.consent_at) : "No consent recorded") +
           (t.groupmates_informed ? "; groupmates informed" : "; groupmates NOT confirmed"))
       ));
-      const photos = el("div", {}, [safeImg(t.device_photo_url, t.device_photo_caption || "Device photo", "")]
+      const photos = el("div", {}, [safeImg(t.device_photo_url, t.device_photo_caption || "Device photo", ""), safeImg(t.defense_photo_url, t.defense_photo_caption || "Defense photo", "")]
         .concat(people.map(function (p) { return safeImg(p.photo_url, p.name, ""); })));
       const approve = el("button", { class: "btn btn--primary btn--small", type: "button", text: "Approve and publish",
         onclick: function () { setStatus(t.id, "approved", "Published."); } });

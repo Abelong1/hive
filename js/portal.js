@@ -202,7 +202,7 @@
 
   async function openForm(id) {
     say("");
-    editing = { id: id, status: "draft", photo_url: "", researchers: [{ name: "", photo_url: "" }] };
+    editing = { id: id, status: "draft", photo_url: "", defense_url: "", researchers: [{ name: "", photo_url: "" }] };
     let t = null;
     if (id) {
       const a = await sb.from("theses").select("*").eq("id", id).single();
@@ -211,6 +211,7 @@
       t = a.data;
       editing.status = t.status;
       editing.photo_url = t.device_photo_url || "";
+      editing.defense_url = t.defense_photo_url || "";
       editing.researchers = b.data.length ? b.data.map(function (r) { return { name: r.name, photo_url: r.photo_url || "" }; })
                                           : editing.researchers;
     }
@@ -227,6 +228,9 @@
     $("f-photo-cap").value = t ? t.device_photo_caption : "";
     $("f-photo").value = "";
     $("f-photo-status").textContent = editing.photo_url ? "A photo is attached. Choose a new file to replace it." : "";
+    $("f-dphoto-cap").value = t ? (t.defense_photo_caption || "") : "";
+    $("f-dphoto").value = "";
+    $("f-dphoto-status").textContent = editing.defense_url ? "A photo is attached. Choose a new file to replace it." : "";
     $("f-consent").checked = t ? t.consent_given : false;
     $("f-group").checked = t ? t.groupmates_informed : false;
     $("btn-delete").hidden = !id;
@@ -269,6 +273,18 @@
       $("f-photo-status").textContent = err.message;
     }
   });
+  $("f-dphoto").addEventListener("change", async function (e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    $("f-dphoto-status").textContent = "Uploading…";
+    try {
+      editing.defense_url = await uploadPhoto(f);
+      $("f-dphoto-status").textContent = "Photo attached.";
+    } catch (err) {
+      e.target.value = "";
+      $("f-dphoto-status").textContent = err.message;
+    }
+  });
 
   function renderResearchers() {
     const box = $("researchers");
@@ -303,7 +319,7 @@
       abstract: $("f-abstract").value.trim(), conclusion: $("f-conclusion").value.trim(),
       recommendations: $("f-recs").value.trim(),
       tags: splitList($("f-tags").value, /,/), technologies: splitList($("f-tech").value, /,/),
-      refs: splitList($("f-refs").value, /\n/), caption: $("f-photo-cap").value.trim(),
+      refs: splitList($("f-refs").value, /\n/), caption: $("f-photo-cap").value.trim(), dcaption: $("f-dphoto-cap").value.trim(),
       consent: $("f-consent").checked, group: $("f-group").checked,
       names: editing.researchers.filter(function (r) { return r.name.trim(); })
     };
@@ -336,7 +352,8 @@
         title: v.title, school_year: v.school_year, adviser: v.adviser, abstract: v.abstract,
         conclusion: v.conclusion, recommendations: v.recommendations, tags: v.tags,
         technologies: v.technologies, refs: v.refs, device_photo_url: editing.photo_url || "",
-        device_photo_caption: v.caption, status: status,
+        device_photo_caption: v.caption, defense_photo_url: editing.defense_url || "",
+        defense_photo_caption: v.dcaption, status: status,
         consent_given: v.consent, groupmates_informed: v.group
       };
       let id = editing.id;

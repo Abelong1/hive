@@ -484,36 +484,36 @@ button {
   padding: 1.4rem 2rem 2.2rem;
 }
 
-.modal__photo {
-  width: 100%;
-  border-radius: 12px;
-  margin-bottom: 1.4rem;
-  display: block;
-  border: 1px solid var(--line);
+.modal__photos {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem; margin-bottom: 1.4rem;
 }
-
+.modal__figure { margin: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.modal__figure-label {
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--honey-text);
+}
+.modal__photo {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: 12px; display: block; border: 1px solid var(--line);
+  background: var(--wax-cream);
+}
+.modal__photos > .modal__figure:only-child .modal__photo { aspect-ratio: auto; max-height: 28rem; object-fit: contain; }
 .modal__photo-placeholder {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border-radius: 10px;
   margin-bottom: 1.4rem;
   border: 1.5px dashed var(--honey-dark);
-  background:
-    repeating-linear-gradient(45deg, var(--wax-cream) 0 12px, #fff 12px 24px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--wax-cream);
   color: var(--honey-text);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-align: center;
-  padding: 1rem;
+  padding: 0.9rem 1rem;
 }
-
 .modal__photo-caption {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--comb-charcoal-soft);
-  margin: -1rem 0 1.4rem;
+  margin: 0;
   font-style: italic;
 }
 
