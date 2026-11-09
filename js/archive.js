@@ -75,7 +75,7 @@
         "tags,technologies,refs,adviser_photo_url,device_photo_url,device_photo_caption,defense_photo_url,defense_photo_caption,verdict,researchers(name,photo_url,position)";
       const q = function (c) {
         return fetch(cfg.url + "/rest/v1/theses?select=" + encodeURIComponent(c) +
-          "&status=eq.approved&order=year_sort.desc,created_at.desc", { headers: { apikey: cfg.key } });
+          "&status=eq.approved&order=created_at.asc", { headers: { apikey: cfg.key } });
       };
       let res = await q(cols);
       // Database without the defense-photo columns yet: load without them.
@@ -159,7 +159,7 @@
 
   // ---- filtering -------------------------------------------------------
   function getFilteredEntries() {
-    return THESIS_DATA.slice().sort(function (a, b) { return b.yearSort - a.yearSort; }).filter(function (t) {
+    return THESIS_DATA.slice().filter(function (t) {
       if (currentYear !== "all" && t.schoolYear !== currentYear) return false;
 
       if (activeTags.size > 0) {
