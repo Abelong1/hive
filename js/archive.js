@@ -26,21 +26,29 @@
   })();
 
   // Shrink to max 600px JPEG in the browser (phone photos are often > 2 MB).
+  // Uses a data: URL (allowed by the site's Content-Security-Policy; blob: is not).
+  // If the browser can't decode it (e.g. HEIC), fall back to the original file when small enough.
   function shrinkImage(file) {
     return new Promise(function (resolve, reject) {
-      if (!/^image\//.test(file.type)) return reject(new Error("Choose an image file."));
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = function () {
-        const k = Math.min(1, 600 / Math.max(img.width, img.height));
-        const c = document.createElement("canvas");
-        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-        URL.revokeObjectURL(url);
-        c.toBlob(function (b) { b ? resolve(b) : reject(new Error("Could not read that image.")); }, "image/jpeg", 0.85);
+      function fallback() {
+        if (/^image\/(jpeg|png|webp)$/.test(file.type) && file.size <= 2 * 1024 * 1024) resolve(file);
+        else reject(new Error("Could not read that image. Please use a JPG or PNG photo."));
+      }
+      const fr = new FileReader();
+      fr.onerror = fallback;
+      fr.onload = function () {
+        const img = new Image();
+        img.onload = function () {
+          const k = Math.min(1, 600 / Math.max(img.width, img.height));
+          const c = document.createElement("canvas");
+          c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob(function (b) { b ? resolve(b) : fallback(); }, "image/jpeg", 0.85);
+        };
+        img.onerror = fallback;
+        img.src = fr.result;
       };
-      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("Could not read that image.")); };
-      img.src = url;
+      fr.readAsDataURL(file);
     });
   }
 
@@ -49,10 +57,12 @@
     let photoUrl = "";
     if (file) {
       const blob = await shrinkImage(file);
-      const path = ADMIN.uid + "/" + crypto.randomUUID() + ".jpg";
-      const up = await sb.storage.from("photos").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+      const type = blob.type || "image/jpeg";
+      const ext = { "image/png": "png", "image/webp": "webp" }[type] || "jpg";
+      const path2 = ADMIN.uid + "/" + crypto.randomUUID() + "." + ext;
+      const up = await sb.storage.from("photos").upload(path2, blob, { contentType: type, upsert: false });
       if (up.error) throw new Error("Upload failed.");
-      photoUrl = sb.storage.from("photos").getPublicUrl(path).data.publicUrl;
+      photoUrl = sb.storage.from("photos").getPublicUrl(path2).data.publicUrl;
     }
     const pattern = p.name.replace(/[\\%_]/g, "\\$&"); // exact, case-insensitive match
     if (p.kind === "adviser") {
