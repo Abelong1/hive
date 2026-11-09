@@ -209,7 +209,7 @@
 
   // Tag chips: show only the most-used tags; the rest appear when the search text
   // matches them. Selected tags always stay visible.
-  const TOP_TAGS = 10;
+  const TOP_TAGS = 20;
   let TAG_COUNTS = new Map();
 
   function populateTagFilters() {
