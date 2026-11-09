@@ -241,8 +241,9 @@
   function render() {
     const entries = getFilteredEntries();
 
-    resultCountEl.textContent = entries.length === 0
-      ? "No entries match your search/filters."
+    const archiveEmpty = THESIS_DATA.length === 0;
+    resultCountEl.textContent = archiveEmpty ? ""
+      : entries.length === 0 ? "No entries match your search/filters."
       : entries.length + (entries.length === 1 ? " thesis" : " theses") + " found.";
 
     gridEl.innerHTML = "";
@@ -252,8 +253,11 @@
       empty.className = "empty-state";
       empty.innerHTML =
         '<div class="empty-state__hex" aria-hidden="true"></div>' +
-        "<p>Nothing in the archive matches that search yet. Try a broader keyword, " +
-        "or clear a filter above.</p>";
+        (archiveEmpty
+          ? "<p><strong>No theses published yet.</strong><br>Researchers can submit theirs through the " +
+            '<a href="portal.html">researcher portal</a>; entries appear here once ACES approves them.</p>'
+          : "<p>Nothing in the archive matches that search yet. Try a broader keyword, " +
+            "or clear a filter above.</p>");
       gridEl.appendChild(empty);
       return;
     }
