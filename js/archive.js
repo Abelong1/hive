@@ -79,7 +79,7 @@
       };
       let res = await q(cols);
       // Database without the defense-photo columns yet: load without them.
-      if (res.status === 400) res = await q(cols.replace("defense_photo_url,defense_photo_caption,", ""));
+      if (res.status === 400 || res.status === 401) res = await q(cols.replace("defense_photo_url,defense_photo_caption,", ""));
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       THESIS_DATA = rows.map(mapRow);

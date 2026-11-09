@@ -36,3 +36,6 @@ begin
 end $$;
 
 notify pgrst, 'reload schema';
+
+-- Visitors (anon) need column-level read access to the new columns.
+grant select (defense_photo_url, defense_photo_caption) on public.theses to anon;
