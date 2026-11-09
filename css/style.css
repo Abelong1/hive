@@ -851,3 +851,14 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.015em; }
   .topnav__brand { margin-right: 0.3rem; }
 }
 @media (max-width: 380px) { .topnav__links .topnav__link { display: none; } }
+@media (max-width: 640px) {
+  /* People grid uses the same compact 3-2-3 layout as Theses */
+  .honeycomb.is-compact .hex-cell__button.person { padding: 0; }
+  .honeycomb.is-compact .person__face { inset: 3px; }
+  .honeycomb.is-compact .person__name { left: 3px; right: 3px; bottom: 3px; font-size: 0.6rem; line-height: 1.15; padding: 0.55rem 0.25rem 1rem; }
+  .honeycomb.is-compact .person__count { font-size: 0.5rem; }
+  .honeycomb.is-compact .person__face--initials { font-size: 1.4rem; padding-bottom: 1.8rem; }
+  .people { padding: 1rem 0.75rem 3rem; }
+  .people__heading { font-size: 1.2rem; }
+  .people__note { font-size: 0.78rem; }
+}

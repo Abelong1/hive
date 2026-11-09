@@ -353,7 +353,9 @@
         return b.count - a.count || a.name.localeCompare(b.name);
       });
     }
-    return { advisers: sorted(advisers), researchers: sorted(researchers) };
+    // Researchers follow the Theses order (same entry order, authors in paper order),
+    // so each group's members sit together.
+    return { advisers: sorted(advisers), researchers: Array.from(researchers.values()) };
   }
 
   function renderPeople() {
@@ -373,7 +375,7 @@
       container.appendChild(p);
       return;
     }
-    buildHoneycombRows(people, container, true).forEach(function (rowPeople, i) {
+    buildHoneycombRows(people, container).forEach(function (rowPeople, i) {
       const row = document.createElement("div");
       row.className = "hex-row" + (i % 2 === 1 ? " hex-row--offset" : "");
       rowPeople.forEach(function (p) { row.appendChild(buildPersonCell(p)); });
