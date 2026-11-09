@@ -130,13 +130,32 @@
   });
 
   async function route() {
-    if (!session) { profile = null; show("view-auth"); return; }
+    if (!session) { profile = null; editOpened = false; show("view-auth"); return; }
     const r = await sb.from("profiles").select("full_name,role").eq("id", session.user.id).maybeSingle();
     if (r.error) { say("Could not load your account. Please refresh the page.", "error"); return; }
     profile = r.data;
     if (!profile) { show("view-redeem"); return; }
     await loadEntries();
+    if (editRequest) {
+      const id = editRequest;
+      editRequest = null; editOpened = true;
+      fromAdmin = profile.role === "admin";
+      history.replaceState(null, "", location.pathname);
+      openForm(id);
+      return;
+    }
+    if (editOpened && currentView !== "view-dash") return; // a duplicate sign-in event must not close the form
     show("view-dash");
+  }
+  let editRequest = (function () {
+    const v = new URLSearchParams(location.search).get("edit");
+    return v && /^[0-9a-f-]{36}$/i.test(v) ? v : null;
+  })();
+  let editOpened = false;
+  let fromAdmin = false;
+  function backAfterForm() {
+    if (fromAdmin) { location.href = "admin.html"; return true; }
+    return false;
   }
 
   // ---------- account ----------
@@ -238,7 +257,11 @@
 
     const notice = $("form-notice");
     notice.hidden = true;
-    if (editing.status === "approved") {
+    $("btn-submit").textContent = (isAdmin() && editing.status === "approved") ? "Save changes" : "Submit for review";
+    if (editing.status === "approved" && isAdmin()) {
+      notice.textContent = "Editing as ACES admin. This entry stays published; changes go live as soon as you save.";
+      notice.hidden = false;
+    } else if (editing.status === "approved") {
       notice.textContent = "This entry is published. Saving any change sends it back for review and hides it until ACES approves it again.";
       notice.hidden = false;
     } else if (editing.status === "rejected") {
@@ -369,6 +392,7 @@
     return "";
   }
 
+  function isAdmin() { return !!(profile && profile.role === "admin"); }
   async function save(status) {
     if (busy) return;
     const v = collect();
@@ -383,7 +407,8 @@
         conclusion: v.conclusion, recommendations: v.recommendations, tags: v.tags,
         technologies: v.technologies, refs: v.refs, device_photo_url: editing.photo_url || "",
         device_photo_caption: v.caption, defense_photo_url: editing.defense_url || "",
-        defense_photo_caption: v.dcaption, verdict: v.verdict, status: status,
+        defense_photo_caption: v.dcaption, verdict: v.verdict,
+        status: (isAdmin() && editing.status === "approved" && status === "pending") ? "approved" : status,
         consent_given: v.consent, groupmates_informed: v.group
       };
       let id = editing.id;
@@ -404,9 +429,10 @@
         }));
         if (ins.error) throw ins.error;
       }
-      if (status === "pending") {
+      if (status === "pending" && !isAdmin()) {
         await sb.from("consent_log").insert({ thesis_id: id, user_id: session.user.id, notice_version: NOTICE_VERSION, groupmates_informed: true });
       }
+      if (backAfterForm()) return;
       await loadEntries();
       show("view-dash");
       say(status === "pending" ? "Submitted. ACES will review it before it appears in the archive." : "Draft saved.", "ok");
@@ -422,11 +448,12 @@
     e.preventDefault();
     save(e.submitter && e.submitter.value === "pending" ? "pending" : "draft");
   });
-  $("btn-cancel").addEventListener("click", function () { say(""); show("view-dash"); });
+  $("btn-cancel").addEventListener("click", function () { say(""); if (!backAfterForm()) show("view-dash"); });
   $("btn-delete").addEventListener("click", async function () {
     if (!editing || !editing.id || !confirm("Delete this entry permanently?")) return;
     const r = await sb.from("theses").delete().eq("id", editing.id);
     if (r.error) { say("Could not delete the entry.", "error"); return; }
+    if (backAfterForm()) return;
     await loadEntries();
     show("view-dash");
     say("Entry deleted.", "ok");

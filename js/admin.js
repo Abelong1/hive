@@ -101,8 +101,11 @@
       list.append(el("li", { class: "entry" }, [
         el("div", {}, [el("div", { class: "entry__title", text: t.title }),
           el("div", { class: "entry__meta", text: "S.Y. " + t.school_year + (t.is_sample ? " · sample data" : "") })]),
+        el("div", { class: "actions" }, [
+        el("a", { class: "btn btn--small", href: "portal.html?edit=" + encodeURIComponent(t.id), text: "Edit" }),
         el("button", { class: "btn btn--small btn--danger", type: "button", text: "Take down",
           onclick: function () { if (confirm("Hide this entry from the public archive?")) setStatus(t.id, "rejected", "Entry taken down."); } })
+        ])
       ]));
     });
   }
