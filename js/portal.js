@@ -290,19 +290,38 @@
     const box = $("researchers");
     H.clear(box);
     editing.researchers.forEach(function (r, i) {
-      const status = el("p", { class: "muted", text: r.photo_url ? "Photo attached." : "" });
-      const file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", "aria-label": "Photo for researcher " + (i + 1) });
+      const initials = (r.name || "?").trim().split(/\s+/).map(function (n) { return n[0] || ""; }).join("").slice(0, 2).toUpperCase() || "?";
+      const thumb = r.photo_url
+        ? el("img", { class: "rcard__photo", src: r.photo_url, alt: "", referrerpolicy: "no-referrer" })
+        : el("div", { class: "rcard__photo rcard__photo--empty", "aria-hidden": "true", text: initials });
+      const status = el("p", { class: "rcard__status muted", text: "" });
+      const file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", class: "visually-hidden",
+        id: "rphoto-" + i, "aria-label": "Photo for researcher " + (i + 1) });
       file.addEventListener("change", async function () {
         if (!file.files[0]) return;
         status.textContent = "Uploading…";
-        try { r.photo_url = await uploadPhoto(file.files[0]); status.textContent = "Photo attached."; }
+        try { r.photo_url = await uploadPhoto(file.files[0]); renderResearchers(); }
         catch (err) { file.value = ""; status.textContent = err.message; }
       });
+      const pick = el("label", { class: "btn btn--small", for: "rphoto-" + i, text: r.photo_url ? "Change photo" : "Add photo" });
+      const clearPhoto = r.photo_url ? el("button", { class: "btn btn--small", type: "button", text: "Remove photo",
+        onclick: function () { r.photo_url = ""; renderResearchers(); } }) : null;
       const name = el("input", { type: "text", maxlength: "120", placeholder: "Full name", value: r.name, "aria-label": "Name of researcher " + (i + 1) });
-      name.addEventListener("input", function () { r.name = name.value; });
-      const rm = el("button", { class: "btn btn--small", type: "button", text: "Remove",
+      name.addEventListener("input", function () {
+        r.name = name.value;
+        if (!r.photo_url) thumb.textContent = (r.name || "?").trim().split(/\s+/).map(function (n) { return n[0] || ""; }).join("").slice(0, 2).toUpperCase() || "?";
+      });
+      const rm = el("button", { class: "btn btn--small btn--danger", type: "button", text: "Remove researcher",
         onclick: function () { editing.researchers.splice(i, 1); if (!editing.researchers.length) editing.researchers.push({ name: "", photo_url: "" }); renderResearchers(); } });
-      box.append(el("div", {}, [el("div", { class: "researcher-row" }, [name, file, rm]), status]));
+      box.append(el("div", { class: "rcard" }, [
+        thumb,
+        el("div", { class: "rcard__body" }, [
+          el("span", { class: "rcard__label", text: "Researcher " + (i + 1) }),
+          name,
+          el("div", { class: "rcard__actions" }, [pick, file, clearPhoto, rm]),
+          status
+        ])
+      ]));
     });
   }
   $("btn-add-researcher").addEventListener("click", function () {

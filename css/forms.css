@@ -159,3 +159,17 @@ details > summary { cursor: pointer; font-weight: 700; }
 .panel > .tabs { margin-top: -0.25rem; }
 
 .btn { font-weight: 600; }
+
+/* Researcher cards in the entry form */
+#researchers { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem; }
+.rcard { display: flex; gap: 0.9rem; align-items: flex-start; padding: 0.85rem; border: 1px solid var(--line-soft); border-radius: 12px; background: #fff; }
+.rcard__photo { width: 72px; height: 72px; flex: none; border-radius: 50%; object-fit: cover; border: 2px solid var(--honey-amber); background: var(--wax-cream); }
+.rcard__photo--empty { display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.2rem; color: var(--honey-text); }
+.rcard__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.rcard__label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--honey-text); }
+.rcard__body input[type="text"] { width: 100%; }
+.rcard__actions { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.rcard__actions label.btn { cursor: pointer; }
+.rcard__actions input[type="file"]:focus-visible + * { outline: 2px solid var(--honey-dark); }
+.rcard__status { margin: 0; font-size: 0.8rem; }
+.rcard__status:empty { display: none; }
