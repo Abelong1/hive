@@ -93,6 +93,7 @@
 
     searchInput.addEventListener("input", function (e) {
       currentQuery = e.target.value.trim().toLowerCase();
+      renderTagChips();
       render();
     });
 
@@ -194,34 +195,56 @@
     const years = Array.from(new Set(THESIS_DATA.map(function (t) { return t.schoolYear; })))
       .sort()
       .reverse();
+    // Rebuild from scratch (data can reload, e.g. after an admin photo change).
+    while (yearSelect.options.length > 1) yearSelect.remove(1);
     years.forEach(function (y) {
       const opt = document.createElement("option");
       opt.value = y;
       opt.textContent = "S.Y. " + y;
       yearSelect.appendChild(opt);
     });
+    if (years.indexOf(currentYear) < 0) currentYear = "all";
+    yearSelect.value = currentYear;
   }
 
+  // Tag chips: show only the most-used tags; the rest appear when the search text
+  // matches them. Selected tags always stay visible.
+  const TOP_TAGS = 10;
+  let TAG_COUNTS = new Map();
+
   function populateTagFilters() {
-    const tags = Array.from(new Set(THESIS_DATA.flatMap(function (t) { return t.tags; }))).sort();
-    tags.forEach(function (tag) {
+    TAG_COUNTS = new Map();
+    THESIS_DATA.forEach(function (t) {
+      t.tags.forEach(function (tag) { TAG_COUNTS.set(tag, (TAG_COUNTS.get(tag) || 0) + 1); });
+    });
+    renderTagChips();
+  }
+
+  function renderTagChips() {
+    tagFiltersEl.innerHTML = "";
+    const all = Array.from(TAG_COUNTS.keys()).sort(function (a, b) {
+      return TAG_COUNTS.get(b) - TAG_COUNTS.get(a) || a.localeCompare(b);
+    });
+    const q = currentQuery;
+    const top = new Set(all.slice(0, TOP_TAGS));
+    const shown = all.filter(function (tag) {
+      if (activeTags.has(tag)) return true;
+      return q ? tag.toLowerCase().indexOf(q) >= 0 : top.has(tag);
+    });
+    shown.forEach(function (tag) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "tag-chip";
       btn.textContent = tag;
-      btn.setAttribute("aria-pressed", "false");
+      btn.setAttribute("aria-pressed", String(activeTags.has(tag)));
       btn.addEventListener("click", function () {
-        if (activeTags.has(tag)) {
-          activeTags.delete(tag);
-          btn.setAttribute("aria-pressed", "false");
-        } else {
-          activeTags.add(tag);
-          btn.setAttribute("aria-pressed", "true");
-        }
+        if (activeTags.has(tag)) activeTags.delete(tag); else activeTags.add(tag);
+        renderTagChips();
         render();
       });
       tagFiltersEl.appendChild(btn);
     });
+    tagFiltersEl.hidden = shown.length === 0;
   }
 
   // ---- filtering -------------------------------------------------------
@@ -487,6 +510,7 @@
     btn.addEventListener("click", function () {
       searchInput.value = p.name;
       currentQuery = p.name.toLowerCase();
+      renderTagChips();
       showView("theses");
       render();
       window.scrollTo({ top: 0 });

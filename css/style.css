@@ -882,3 +882,4 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.015em; }
   .people, .about__inner { max-width: min(94vw, 140rem); }
   .tag-filters { justify-content: center; }
 }
+.tag-filters[hidden] { display: none; }
