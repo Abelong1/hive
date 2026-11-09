@@ -306,10 +306,20 @@
       const pick = el("label", { class: "btn btn--small", for: "rphoto-" + i, text: r.photo_url ? "Change photo" : "Add photo" });
       const clearPhoto = r.photo_url ? el("button", { class: "btn btn--small", type: "button", text: "Remove photo",
         onclick: function () { r.photo_url = ""; renderResearchers(); } }) : null;
-      const name = el("input", { type: "text", maxlength: "120", placeholder: "Full name", value: r.name, "aria-label": "Name of researcher " + (i + 1) });
+      const name = el("input", { type: "text", maxlength: "120", placeholder: "Full name (one person)", value: r.name, "aria-label": "Name of researcher " + (i + 1) });
       name.addEventListener("input", function () {
         r.name = name.value;
         if (!r.photo_url) thumb.textContent = (r.name || "?").trim().split(/\s+/).map(function (n) { return n[0] || ""; }).join("").slice(0, 2).toUpperCase() || "?";
+      });
+      // Several names typed in one box ("A, B, C") become separate researchers.
+      name.addEventListener("blur", function () {
+        const parts = name.value.split(/\s*[,;]\s*|\s+and\s+/i).map(function (x) { return x.trim(); }).filter(Boolean);
+        if (parts.length < 2) return;
+        r.name = parts[0];
+        const extra = parts.slice(1).map(function (n) { return { name: n, photo_url: "" }; });
+        editing.researchers.splice.apply(editing.researchers, [i + 1, 0].concat(extra));
+        editing.researchers = editing.researchers.slice(0, 8);
+        renderResearchers();
       });
       const rm = el("button", { class: "btn btn--small btn--danger", type: "button", text: "Remove researcher",
         onclick: function () { editing.researchers.splice(i, 1); if (!editing.researchers.length) editing.researchers.push({ name: "", photo_url: "" }); renderResearchers(); } });
