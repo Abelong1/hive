@@ -883,3 +883,26 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.015em; }
   .tag-filters { justify-content: center; }
 }
 .tag-filters[hidden] { display: none; }
+
+/* ---------------------------------------------------------------------------
+   Correction requests (detail modal)
+--------------------------------------------------------------------------- */
+.report-box { display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-start;
+  border: 1px dashed var(--honey-dark); border-radius: 12px; padding: 1rem 1.2rem; font-size: 0.9rem; }
+.report-box strong { color: var(--honey-text); }
+.report-btn { font: inherit; font-weight: 600; font-size: 0.88rem; cursor: pointer; padding: 0.45rem 1rem;
+  border-radius: 999px; border: 1px solid var(--honey-amber); background: var(--honey-amber); color: var(--comb-charcoal); }
+.report-btn:hover { background: var(--honey-light); }
+.report-btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+.report-btn--ghost { background: transparent; border-color: var(--honey-dark); color: var(--honey-text); }
+.report-btn--ghost:hover { background: var(--wax-cream); }
+.report-form { display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid var(--honey-dark);
+  border-radius: 12px; padding: 1rem 1.2rem; background: var(--wax-cream); }
+.report-form h3 { margin: 0; }
+.report-form__row { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.88rem; font-weight: 600; }
+.report-form__row small { font-weight: 400; color: var(--comb-charcoal-soft); }
+.report-form input, .report-form select, .report-form textarea { font: inherit; font-weight: 400; padding: 0.5rem 0.65rem;
+  border: 1px solid #CDB991; border-radius: 8px; background: #fff; color: var(--ink); width: 100%; box-sizing: border-box; }
+.report-form textarea { resize: vertical; }
+.report-form__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.report-form__msg { margin: 0; font-size: 0.85rem; color: #7A1D10; min-height: 1em; }

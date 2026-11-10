@@ -15,7 +15,7 @@
 <body>
 <header class="site-header site-header--slim">
   <h1>ACES Admin</h1>
-  <p>Review submissions, manage published entries, and issue invite codes.</p>
+  <p>Review submissions, manage published entries, handle correction requests, and issue invite codes.</p>
 </header>
 
 <main class="panel-wrap">
@@ -32,6 +32,7 @@
       <button type="button" class="tab" role="tab" id="tab-published" aria-selected="false">Published</button>
       <button type="button" class="tab" role="tab" id="tab-codes" aria-selected="false">Invite codes</button>
       <button type="button" class="tab" role="tab" id="tab-advisers" aria-selected="false">Advisers</button>
+      <button type="button" class="tab" role="tab" id="tab-corrections" aria-selected="false">Corrections <span id="corr-count" class="badge"></span></button>
     </div>
 
     <div id="pane-review" class="panel"><h2>Waiting for review</h2><div id="review-list"></div></div>
@@ -56,6 +57,15 @@
       <h2>Adviser photos</h2>
       <p class="muted">Shown on the People page. Names come from every entry's adviser field. JPG, PNG or WebP, max 2 MB.</p>
       <ul class="entries" id="adviser-list"></ul>
+    </div>
+
+    <div id="pane-corrections" class="panel" hidden>
+      <div class="topbar"><h2>Correction requests</h2>
+        <select id="corr-filter" aria-label="Show">
+          <option value="open">Open</option><option value="resolved">Resolved</option><option value="dismissed">Dismissed</option><option value="all">All</option>
+        </select></div>
+      <p class="muted">Sent by visitors from an entry's detail view. Fix the entry with Edit, then mark the request resolved.</p>
+      <div id="corr-list"></div>
     </div>
   </section>
 </main>

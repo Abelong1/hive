@@ -111,7 +111,7 @@
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closeModal();
       if (e.key === "Tab" && !modalOverlay.hidden) {
-        const f = modalOverlay.querySelectorAll("a[href], button:not([disabled])");
+        const f = modalOverlay.querySelectorAll("a[href], button:not([disabled]), input, select, textarea");
         if (!f.length) return;
         const first = f[0], last = f[f.length - 1];
         if (!modalOverlay.contains(document.activeElement) ||
@@ -168,6 +168,7 @@
   function mapRow(t) {
     return {
       id: String(t.id).slice(0, 8).toUpperCase(),
+      uuid: t.id,
       title: t.title,
       schoolYear: t.school_year,
       yearSort: t.year_sort,
@@ -683,6 +684,13 @@
             "with the thesis ID (" + escapeHTML(entry.id) + "), your name, and your reason for the request." +
           "</div>" +
         "</div>" +
+        '<div class="modal__section" id="report-section">' +
+          '<div class="report-box">' +
+            "<strong>Spotted wrong info?</strong>" +
+            "<span>Wrong name, school year, adviser, photo, or a typo? Send a correction request and ACES will review it.</span>" +
+            '<button type="button" class="report-btn" id="report-open" data-uuid="' + escapeHTML(entry.uuid) + '">Request a correction</button>' +
+          "</div>" +
+        "</div>" +
       "</div>"
     );
   }
@@ -691,7 +699,71 @@
   // since the header (and its close button) is regenerated per entry.
   document.addEventListener("click", function (e) {
     if (e.target && e.target.id === "modal-close-inner") closeModal();
+    if (e.target && e.target.id === "report-open") openReportForm(e.target.getAttribute("data-uuid"));
   });
+
+  // ---- correction requests (submitted via submit_correction RPC; admins review in admin.html) ----
+  const REPORT_FIELDS = [["researchers", "Researcher name(s)"], ["title", "Title"], ["school_year", "School year"],
+    ["adviser", "Adviser"], ["verdict", "Verdict"], ["photos", "Photo"], ["abstract", "Abstract"],
+    ["conclusion", "Conclusion"], ["recommendations", "Recommendations"], ["tags", "Tags"],
+    ["technologies", "Technologies"], ["references", "References"], ["other", "Something else"]];
+  const REPORT_REASONS = [["wrong_info", "Information is wrong"], ["typo", "Typo or misspelling"],
+    ["missing_info", "Something is missing"], ["outdated", "Outdated"], ["wrong_photo", "Wrong or mislabeled photo"],
+    ["privacy", "Privacy concern (remove my info)"], ["other", "Other"]];
+  const REPORT_RELATIONS = [["visitor", "Visitor"], ["student", "Student"], ["researcher", "One of the researchers"],
+    ["adviser", "The adviser"], ["faculty", "Faculty"]];
+
+  function openReportForm(uuid) {
+    const H = window.Hive, el = H.el;
+    const sec = document.getElementById("report-section");
+    if (!sec || !uuid) return;
+    function sel(id, opts) { return el("select", { id: id, required: true }, opts.map(function (o) { return el("option", { value: o[0], text: o[1] }); })); }
+    function row(label, input, hint) { return el("label", { class: "report-form__row" }, [el("span", { text: label }), input, hint ? el("small", { text: hint }) : null]); }
+    const msg = el("p", { class: "report-form__msg", role: "status", "aria-live": "polite" });
+    const submit = el("button", { type: "submit", class: "report-btn", text: "Send request" });
+    const form = el("form", { class: "report-form", novalidate: true }, [
+      el("h3", { text: "Request a correction" }),
+      row("What is wrong?", sel("rf-field", REPORT_FIELDS)),
+      row("Reason", sel("rf-reason", REPORT_REASONS)),
+      row("Currently shows (optional)", el("input", { id: "rf-current", type: "text", maxlength: "500" })),
+      row("Should be (optional)", el("input", { id: "rf-suggested", type: "text", maxlength: "500" })),
+      row("Why? Explain the issue", el("textarea", { id: "rf-details", rows: "4", maxlength: "1000", required: true }), "At least 10 characters. Mention proof if you have it (e.g. the approved manuscript)."),
+      row("Your name", el("input", { id: "rf-name", type: "text", maxlength: "120", required: true, autocomplete: "name" })),
+      row("Your email (optional, for follow-up)", el("input", { id: "rf-email", type: "email", maxlength: "200", autocomplete: "email" })),
+      row("You are", sel("rf-relation", REPORT_RELATIONS)),
+      el("div", { class: "report-form__actions" }, [submit,
+        el("button", { type: "button", class: "report-btn report-btn--ghost", text: "Cancel", onclick: function () { closeModal(); } })]),
+      msg
+    ]);
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const v = function (id) { return document.getElementById(id).value.trim(); };
+      if (v("rf-details").length < 10) { msg.textContent = "Please explain the issue (at least 10 characters)."; return; }
+      if (v("rf-name").length < 2) { msg.textContent = "Please enter your name."; return; }
+      if (v("rf-email") && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v("rf-email"))) { msg.textContent = "That email doesn't look right."; return; }
+      submit.disabled = true; msg.textContent = "Sending…";
+      try {
+        const cfg = window.HIVE_CONFIG;
+        const res = await fetch(cfg.url + "/rest/v1/rpc/submit_correction", {
+          method: "POST",
+          headers: { apikey: cfg.key, "Content-Type": "application/json" },
+          body: JSON.stringify({ p_thesis: uuid, p_field: v("rf-field"), p_current: v("rf-current"), p_suggested: v("rf-suggested"),
+            p_reason: v("rf-reason"), p_details: v("rf-details"), p_name: v("rf-name"), p_email: v("rf-email"), p_relation: v("rf-relation") })
+        });
+        if (!res.ok) {
+          let m = "Could not send the request. Please try again later.";
+          try { const j = await res.json(); if (j && /limit|Too many|open reports/i.test(j.message || "")) m = j.message; } catch (x) { /* keep default */ }
+          throw new Error(m);
+        }
+        H.clear(sec);
+        sec.append(el("div", { class: "report-box" }, [el("strong", { text: "Thanks! Request sent." }),
+          el("span", { text: "ACES admins will review it. Nothing on the entry changes until they approve the fix." })]));
+      } catch (err) { msg.textContent = err.message; submit.disabled = false; }
+    });
+    H.clear(sec);
+    sec.append(form);
+    document.getElementById("rf-field").focus();
+  }
 
   document.addEventListener("DOMContentLoaded", init);
 })();

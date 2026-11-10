@@ -10,7 +10,7 @@
   let session = null, isAdmin = false, started = false;
 
   function showTab(name) {
-    ["review", "published", "codes", "advisers"].forEach(function (t) {
+    ["review", "published", "codes", "advisers", "corrections"].forEach(function (t) {
       $("pane-" + t).hidden = t !== name;
       $("tab-" + t).setAttribute("aria-selected", String(t === name));
     });
@@ -19,8 +19,9 @@
     if (name === "published") loadPublished();
     if (name === "codes") loadCodes();
     if (name === "advisers") loadAdvisers();
+    if (name === "corrections") loadCorrections();
   }
-  ["review", "published", "codes", "advisers"].forEach(function (t) {
+  ["review", "published", "codes", "advisers", "corrections"].forEach(function (t) {
     $("tab-" + t).addEventListener("click", function () { showTab(t); });
   });
 
@@ -34,7 +35,7 @@
       $("view-denied").hidden = isAdmin;
       $("view-admin").hidden = !isAdmin;
       if (!isAdmin) { $("denied-text").textContent = "This account is not an ACES admin."; return; }
-      if (!started) { started = true; showTab("review"); }
+      if (!started) { started = true; showTab("review"); countCorrections(); }
     }, 0);
   });
 
@@ -211,5 +212,72 @@
     const m = $("msg").textContent, k = $("msg").className;
     await loadAdvisers();
     $("msg").textContent = m; $("msg").className = k;
+  }
+  // ---------- correction requests ----------
+  const FIELD_LABELS = { title: "Title", researchers: "Researcher name(s)", school_year: "School year", adviser: "Adviser",
+    verdict: "Verdict", abstract: "Abstract", conclusion: "Conclusion", recommendations: "Recommendations", tags: "Tags",
+    technologies: "Technologies", references: "References", photos: "Photo", other: "Something else" };
+  const REASON_LABELS = { typo: "Typo or misspelling", wrong_info: "Information is wrong", missing_info: "Something is missing",
+    outdated: "Outdated", wrong_photo: "Wrong or mislabeled photo", privacy: "Privacy concern", other: "Other" };
+
+  async function countCorrections() {
+    const r = await sb.from("correction_requests").select("id", { count: "exact", head: true }).eq("status", "open");
+    $("corr-count").textContent = r.count ? String(r.count) : "";
+  }
+
+  $("corr-filter").addEventListener("change", function () { loadCorrections(); });
+
+  async function loadCorrections() {
+    const box = $("corr-list");
+    H.clear(box);
+    let q = sb.from("correction_requests").select("*,theses(title,school_year)").order("created_at", { ascending: false }).limit(200);
+    const f = $("corr-filter").value;
+    if (f !== "all") q = q.eq("status", f);
+    const r = await q;
+    if (r.error) { say("Could not load correction requests.", "error"); return; }
+    countCorrections();
+    if (!r.data.length) { box.append(el("p", { class: "muted", text: f === "open" ? "No open requests." : "Nothing here." })); return; }
+    r.data.forEach(function (c) {
+      const t = c.theses || {};
+      const dl = el("dl", {}, [].concat(
+        field("Entry", (t.title || "(deleted entry)") + (t.school_year ? " · S.Y. " + t.school_year : "")),
+        field("What is wrong", FIELD_LABELS[c.field] || c.field),
+        field("Reason", REASON_LABELS[c.reason] || c.reason),
+        field("Currently shows", c.current_value), field("Should be", c.suggested_value),
+        field("Why", c.details),
+        field("From", c.requester_name + " (" + c.relation + ")" + (c.requester_email ? " · " + c.requester_email : "")),
+        field("Sent", H.fmtDate(c.created_at)),
+        field("Status", c.status + (c.resolved_at ? " · " + H.fmtDate(c.resolved_at) : "")),
+        field("Admin note", c.admin_note)
+      ));
+      const kids = [dl];
+      if (c.status === "open") {
+        const note = el("input", { type: "text", maxlength: "1000", placeholder: "Note (optional), e.g. what was changed", "aria-label": "Admin note" });
+        kids.push(note, el("div", { class: "actions" }, [
+          el("a", { class: "btn btn--small", href: "portal.html?edit=" + encodeURIComponent(c.thesis_id), target: "_blank", rel: "noopener", text: "Edit entry" }),
+          el("button", { class: "btn btn--primary btn--small", type: "button", text: "Mark resolved",
+            onclick: function () { closeCorrection(c.id, "resolved", note.value, "Marked resolved."); } }),
+          el("button", { class: "btn btn--small btn--danger", type: "button", text: "Dismiss",
+            onclick: function () { closeCorrection(c.id, "dismissed", note.value, "Request dismissed."); } })
+        ]));
+      } else {
+        kids.push(el("div", { class: "actions" }, [el("button", { class: "btn btn--small", type: "button", text: "Reopen",
+          onclick: function () { closeCorrection(c.id, "open", c.admin_note || "", "Reopened."); } })]));
+      }
+      box.append(el("details", { class: "entry review", open: c.status === "open" }, [
+        el("summary", { text: (FIELD_LABELS[c.field] || c.field) + " — " + (t.title || "(deleted entry)") }), el("div", {}, kids)
+      ]));
+    });
+  }
+
+  async function closeCorrection(id, status, note, okMsg) {
+    const open = status === "open";
+    const r = await sb.from("correction_requests").update({
+      status: status, admin_note: note.trim() || null,
+      resolved_at: open ? null : new Date().toISOString(), resolved_by: open ? null : session.user.id
+    }).eq("id", id);
+    if (r.error) { say("Could not update the request.", "error"); return; }
+    await loadCorrections();
+    say(okMsg, "ok");
   }
 })();
